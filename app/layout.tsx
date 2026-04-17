@@ -1,52 +1,43 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Cormorant_Garamond, Cinzel } from "next/font/google";
-import "./globals.css";
-import SmoothScroll from "./components/SmoothScroll";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next';
+import { Cormorant_Garamond, Courier_Prime, Manrope } from 'next/font/google';
+import './globals.css';
+import SmoothScroll from './components/SmoothScroll';
 
 const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-heading',
+  display: 'swap',
 });
 
-const cinzel = Cinzel({
-  variable: "--font-cinzel",
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "900"],
-  display: "swap",
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-body',
+  display: 'swap',
 });
-
+const courierPrime = Courier_Prime({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-courier',
+});
 export const metadata: Metadata = {
-  title: "Ayusurance — Ancient Wisdom Modern Assurance",
+  title: 'Ayusurance — Ancient Wisdom Modern Assurance',
   description:
-    "Ayusurance connects you with certified Ayurvedic practitioners worldwide, offering personalized teleconsultations, concierge services, and holistic wellness solutions.",
+    'Ayusurance connects you with certified Ayurvedic practitioners worldwide, offering personalized teleconsultations, concierge services, and holistic wellness solutions.',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${cormorant.variable} ${cinzel.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
-        <SmoothScroll />
-        {children}
-      </body>
-    </html>
-  );
-}
+const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
+  <html
+    lang='en'
+    className={`${cormorant.variable} ${manrope.variable} ${courierPrime.variable}  antialiased font-body`}
+    suppressHydrationWarning
+  >
+    <body className='min-h-full flex flex-col' suppressHydrationWarning>
+      <SmoothScroll />
+      {children}
+    </body>
+  </html>
+);
+
+export default RootLayout;

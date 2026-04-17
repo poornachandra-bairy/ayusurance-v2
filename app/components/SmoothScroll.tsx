@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Lenis from 'lenis';
 
-export default function SmoothScroll() {
+const SmoothScroll = () => {
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -11,10 +11,12 @@ export default function SmoothScroll() {
     });
 
     let rafId: number;
-    function raf(time: number) {
+
+    const raf = (time: number) => {
       lenis.raf(time);
       rafId = requestAnimationFrame(raf);
-    }
+    };
+
     rafId = requestAnimationFrame(raf);
 
     return () => {
@@ -24,4 +26,6 @@ export default function SmoothScroll() {
   }, []);
 
   return null;
-}
+};
+
+export default SmoothScroll;
