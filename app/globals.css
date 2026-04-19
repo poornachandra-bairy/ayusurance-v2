@@ -1,226 +1,76 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-/* ─── Design tokens ───────────────────────────────────────────────────────── */
-:root {
-  --background: #88C0D8;          /* sky top */
-  --foreground: #1a3528;
+/* ─── Design tokens (Tailwind v4 @theme) ───────────────────────────────────── */
+@theme {
+  /* Palette */
+  --color-ivory:        #f8f4ea;
+  --color-champagne:    #f1e6c8;
+  --color-sandal:       #e6d7b1;
+  --color-gold-soft:    #c9a45a;
+  --color-gold-deep:    #a8843e;
+  --color-sage-light:   #d8e2cf;
+  --color-sage:         #a9bc97;
+  --color-herb:         #7e966c;
+  --color-olive:        #5f7750;
+  --color-forest:       #3f5a3e;
+  --color-forest-deep:  #2b4230;
+  --color-amber-logo:   #c8821a;
 
-  --font-sans:  var(--font-geist-sans);
-  --font-mono:  var(--font-geist-mono);
-  --font-serif: var(--font-cormorant), Georgia, serif;
+  --color-text-900: #243126;
+  --color-text-700: #3b4a38;
+  --color-text-500: #556353;
+  --color-text-400: #6e7a6c;
+  --color-text-300: #889184;
 
-  /* Palette extracted from reference image */
-  --clr-sky:          #88C0D8;   /* top sky blue        */
-  --clr-sky-mid:      #A8D2E0;   /* lighter sky          */
-  --clr-cream:        #E2EDB0;   /* center cream-lime    */
-  --clr-sage:         #7A9E6A;   /* mid sage green       */
-  --clr-forest:       #4E7252;   /* deep forest          */
-  --clr-forest-dark:  #3A5840;   /* darkest earth        */
-
-  /* Text colours (dark, readable on all bg zones) */
-  --clr-text-900: #1a3028;
-  --clr-text-700: #2a4838;
-  --clr-text-500: #3a5848;
-  --clr-text-400: #4a6858;
-  --clr-text-300: #5a7868;
-
-  /* Borders */
-  --clr-border: rgba(74, 114, 82, 0.35);
+  /* Typography */
+  --font-sans:    var(--font-body),    Arial, Helvetica, sans-serif;
+  --font-mono:    var(--font-courier), 'Courier Prime', Courier, monospace;
+  --font-serif:   var(--font-heading), 'Cormorant Garamond', Georgia, serif;
+  --font-display: var(--font-heading), 'Cormorant Garamond', Georgia, serif;
+  --font-sanskrit: var(--font-sanskrit), 'Cormorant Garamond', Georgia, serif;
 }
 
-/* ─── Entrance animations ─────────────────────────────────────────────────── */
+/* ─── Keyframes (cannot be expressed as Tailwind classes) ──────────────────── */
+@keyframes mandalaSpinCW  { to { transform: rotate(360deg);  } }
+@keyframes mandalaSpinCCW { to { transform: rotate(-360deg); } }
+
+@keyframes mandalaFloat {
+  0%, 100% { margin-top: 0px;   margin-left: 0px;   }
+  25%      { margin-top: -22px; margin-left: 12px;  }
+  50%      { margin-top: -8px;  margin-left: -18px; }
+  75%      { margin-top: 16px;  margin-left: 8px;   }
+}
+
+@keyframes bgBreath {
+  0%, 100% { opacity: 1;   }
+  50%      { opacity: 0.9; }
+}
+
+@keyframes bounceUp {
+  0%, 100% { transform: translateY(0);   }
+  50%      { transform: translateY(-8px); }
+}
+
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+/* ─── Base reset ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
-/* ─── Base ────────────────────────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+html {
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
 }
 
 body {
-  /* Replicate the sky→cream→forest gradient across the full page */
-  background:
-    radial-gradient(ellipse 90% 55% at 50% 58%, #EAF2B8 0%, transparent 65%),
-    linear-gradient(180deg, #88C0D8 0%, #6A9868 100%);
-  background-attachment: fixed;
-  color: var(--clr-text-700);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  color: #3b4a38;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
 }
 
-/* ─── Navbar ──────────────────────────────────────────────────────────────── */
-.nav-logo {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a3028;
-  letter-spacing: -0.01em;
-  cursor: default;
-  user-select: none;
-  text-decoration: none;
-}
-
-.nav-link {
-  color: #1a3028;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  transition: color 0.2s ease, opacity 0.2s ease;
-}
-
-.nav-link:hover {
-  color: #000;
-  opacity: 0.75;
-}
-
-/* ─── Buttons ─────────────────────────────────────────────────────────────── */
-
-/* Primary — deep sky → forest gradient */
-.btn-primary {
-  background: linear-gradient(135deg, #2a6882, #3d7a5a);
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  padding: 0.75rem 1.75rem;
-  font-size: 0.9375rem;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0px 8px 24px rgba(42, 104, 130, 0.30);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  white-space: nowrap;
-  line-height: 1;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0px 12px 30px rgba(42, 104, 130, 0.40);
-}
-
-/* Primary — compact variant for navbar */
-.btn-primary-sm {
-  padding: 0.5rem 1.25rem;
-  font-size: 0.875rem;
-  border-radius: 10px;
-}
-
-/* Secondary — sage green */
-.btn-secondary {
-  background: #4e7252;
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  padding: 0.75rem 1.75rem;
-  font-size: 0.9375rem;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0px 6px 20px rgba(78, 114, 82, 0.28);
-  transition: background 0.3s ease;
-  white-space: nowrap;
-  line-height: 1;
-}
-
-.btn-secondary:hover {
-  background: #3a5840;
-}
-
-/* Ghost */
-.btn-ghost {
-  background: rgba(255, 255, 255, 0.22);
-  color: #1a3028;
-  border: 1px solid rgba(74, 114, 82, 0.4);
-  border-radius: 12px;
-  padding: 0.75rem 1.75rem;
-  font-size: 0.9375rem;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-  transition: background 0.25s ease, border-color 0.25s ease;
-  white-space: nowrap;
-  line-height: 1;
-}
-
-.btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.38);
-  border-color: rgba(74, 114, 82, 0.65);
-}
-
-/* ─── Hero typography ─────────────────────────────────────────────────────── */
-
-/* Tiny all-caps eyebrow above the heading */
-.hero-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin: 0 0 1.5rem;
-}
-.hero-eyebrow::before {
-  content: '';
-  display: block;
-  width: 2rem;
-  height: 1px;
-  background: #3d6a4a;
-  opacity: 0.7;
-  flex-shrink: 0;
-}
-.hero-eyebrow span {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #2c5440;
-}
-
-.hero-heading {
-  font-family: var(--font-serif);
-  font-size: clamp(2.75rem, 4vw, 4.75rem);
-  font-weight: 600;
-  line-height: 1.06;
-  color: #12281e;
-  letter-spacing: -0.025em;
-  margin: 0 0 1.5rem;
-}
-
-/* Italic, slightly larger — evocative, not clinical */
-.hero-subheading {
-  font-family: var(--font-serif);
-  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
-  font-style: italic;
-  font-weight: 400;
-  color: #2a4838;
-  line-height: 1.5;
-  margin: 0;
-  letter-spacing: 0.01em;
-}
-
-/* Thin rule between subheading and body */
-.hero-divider {
-  width: 4rem;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.65), rgba(255,255,255,0.08));
-  margin: 1.5rem 0 1.75rem;
-  border: none;
-  display: block;
-}
-
-.hero-body {
-  font-size: 0.9375rem;
-  line-height: 1.85;
-  color: #3a5848;
-  max-width: 58ch;
-  margin: 0;
-  letter-spacing: 0.01em;
+::selection {
+  background: rgba(201,164,90,0.28);
+  color: #243126;
 }

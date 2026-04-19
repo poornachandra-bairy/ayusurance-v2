@@ -1,51 +1,31 @@
-const NAV_LINKS = [
-  { label: "Home",            href: "/"                },
-  { label: "About",           href: "/about"           },
-  { label: "Offerings",       href: "/offerings"       },
-  { label: "Patient Journey", href: "/patient-journey" },
-  { label: "Contact",         href: "/contact"         },
-];
+import Link from 'next/link';
+import { NAV_LINKS, NAV_CTA_LABEL, SITE_NAME } from '../constants';
 
-export default function Navbar() {
-  return (
-    <nav
-      style={{
-        position: "fixed",
-        top: "12px",
-        left: "1.25rem",
-        right: "1.25rem",
-        zIndex: 100,
-        height: "56px",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 1.75rem",
-        justifyContent: "space-between",
-        background: "rgba(136, 192, 216, 0.72)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderRadius: "16px",
-        border: "1px solid rgba(255,255,255,0.30)",
-        boxShadow: "0 4px 24px rgba(30, 80, 60, 0.12), 0 1px 4px rgba(30,80,60,0.08)",
-      }}
+const Navbar = () => (
+  <nav className="fixed top-3 left-5 right-5 z-[100] h-14 flex items-center px-7 justify-between bg-ivory/70 backdrop-blur-md rounded-2xl border border-white/30 shadow-[0_10px_30px_rgba(95,119,80,0.08),0_2px_8px_rgba(168,132,62,0.08)]">
+    <Link href="/" className="font-display font-semibold text-2xl text-forest-deep tracking-tight no-underline select-none">
+      {SITE_NAME}
+    </Link>
+
+    <div className="flex gap-8 items-center">
+      {NAV_LINKS.map((link) => (
+        <Link
+          key={link.label}
+          href={link.href}
+          className="font-sans text-sm font-medium text-text-700 tracking-wide no-underline transition-colors duration-200 hover:text-gold-deep"
+        >
+          {link.label}
+        </Link>
+      ))}
+    </div>
+
+    <Link
+      href="/contact"
+      className="inline-flex items-center px-5 py-2 rounded-xl text-sm font-medium text-white no-underline bg-gradient-to-br from-[#b8934c] to-[#6c875b] shadow-[0_10px_28px_rgba(168,132,62,0.22)] transition-transform duration-300 hover:-translate-y-0.5"
     >
-      {/* Logo */}
-      <a href="/" className="nav-logo">
-        Ayusurance
-      </a>
+      {NAV_CTA_LABEL}
+    </Link>
+  </nav>
+);
 
-      {/* Center nav links */}
-      <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-        {NAV_LINKS.map((link) => (
-          <a key={link.label} href={link.href} className="nav-link">
-            {link.label}
-          </a>
-        ))}
-      </div>
-
-      {/* CTA */}
-      <button className="btn-primary btn-primary-sm">
-        Book Consultation
-      </button>
-    </nav>
-  );
-}
+export default Navbar;
