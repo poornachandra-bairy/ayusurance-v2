@@ -59,7 +59,7 @@ const HeroSection = ({
       </div>
 
       {/* Main content row */}
-      <div className="relative z-10 h-full flex items-center pt-[76px] pl-[12vw] pr-8 gap-[4vw]">
+      <div className="relative z-10 h-full flex flex-col md:flex-row items-center pt-[76px] px-6 md:pl-[12vw] md:pr-8 gap-8 md:gap-[4vw]">
         <HeroText textRef={textRef} />
         <RishiScene
           rishiRef={rishiRef}

@@ -44,6 +44,16 @@ const TOTAL_UNITS  = INTRO_UNITS + FLIPS + OUTRO_UNITS;
 export default function PatientJourneyPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0); // 0 → TOTAL_UNITS
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,36 +79,35 @@ export default function PatientJourneyPage() {
   const outroScale = lerp(0, 1, ease(outroP));
 
   // ── Book scale:
-  //   0 → INTRO  : 0.45 → 1.0  (scale up)
-  //   INTRO → END: 1.0  → 1.0  (hold, with subtle open-pulse)
-  //   OUTRO       : 1.0  → 0.45 (scale back down)
-  const INITIAL_BOOK_SCALE = 0.45;
+  const INITIAL_BOOK_SCALE = isMobile ? 0.35 : 0.45;
+  const FULL_BOOK_SCALE    = isMobile ? 0.72 : 1.0;
+
   let baseScale: number;
   if (scrollProgress <= INTRO_UNITS) {
-    baseScale = lerp(INITIAL_BOOK_SCALE, 1.0, ease(ph(scrollProgress, 0, INTRO_UNITS)));
+    baseScale = lerp(INITIAL_BOOK_SCALE, FULL_BOOK_SCALE, ease(ph(scrollProgress, 0, INTRO_UNITS)));
   } else if (scrollProgress <= INTRO_UNITS + FLIPS) {
-    baseScale = 1.0;
+    baseScale = FULL_BOOK_SCALE;
   } else {
-    baseScale = lerp(1.0, INITIAL_BOOK_SCALE, ease(outroP));
+    baseScale = lerp(FULL_BOOK_SCALE, INITIAL_BOOK_SCALE, ease(outroP));
   }
 
   const bookScale = baseScale;
 
-  // Book X & Y: moves DOWN during intro/outro to clear the text above it.
-  // X shifts by -24% (intro) and +24% (outro) so the single visible page is centered!
-  // When reading (scale = 1), bookY and bookX are exactly 0 (true center).
+  // Book X & Y shifts
+  const shiftX = isMobile ? 12 : 24; // Lower horizontal shift on mobile to keep it in view
+
   let bookX: number;
   let bookY: number;
   if (scrollProgress <= INTRO_UNITS) {
     const t = ease(ph(scrollProgress, 0, INTRO_UNITS));
-    bookX = lerp(-24, 0, t);
+    bookX = lerp(-shiftX, 0, t);
     bookY = lerp(70, 0, t);
   } else if (scrollProgress <= INTRO_UNITS + FLIPS) {
     bookX = 0;
     bookY = 0;
   } else {
     const t = ease(outroP);
-    bookX = lerp(0, 24, t);
+    bookX = lerp(0, shiftX, t);
     bookY = lerp(0, 70, t);
   }
 

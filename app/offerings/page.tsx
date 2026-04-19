@@ -20,8 +20,9 @@ export default function OfferingsPage() {
   const progressTextRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
-      
+    let mm = gsap.matchMedia();
+
+    mm.add("(min-width: 769px)", () => {
       const sections = gsap.utils.toArray('.manuscript-item') as HTMLElement[];
       
       // 1. Horizontal Scroll Tween (Stop & Go Mechanic)
@@ -30,7 +31,7 @@ export default function OfferingsPage() {
           trigger: galleryWrapperRef.current,
           pin: true,
           scrub: 1,
-          end: () => `+=${sections.length * 1500}`, // Increase total scroll space for deep pauses
+          end: () => `+=${sections.length * 1500}`,
           onUpdate: (self) => {
             if (progressBarRef.current) {
               gsap.set(progressBarRef.current, { scaleX: self.progress });
@@ -47,10 +48,8 @@ export default function OfferingsPage() {
       });
 
       sections.forEach((el, index) => {
-        // Physical pause: user scrolls but horizontal track stays pinned dead still
         scrollTween.to({}, { duration: 0.6 }); 
 
-        // Slide out to the next track piece
         if (index < sections.length - 1) {
           scrollTween.to(galleryContentRef.current, {
             x: () => -((index + 1) * window.innerWidth),
@@ -60,23 +59,15 @@ export default function OfferingsPage() {
         }
       });
 
-      // 2. Add Horizontal Parallax to inner elements
       sections.forEach((el, index) => {
         const heading = el.querySelector('.parallax-heading') as HTMLElement;
         const imageBlock = el.querySelector('.manuscript-image-block') as HTMLElement;
         const isOdd = index % 2 !== 0;
 
-        // The Foreground Parallax: Manuscript canvas gracefully drags through the horizontal track
         gsap.fromTo(imageBlock, 
+          { x: 150, y: 40, rotation: isOdd ? 4 : -4 }, 
           { 
-            x: 150, 
-            y: 40,
-            rotation: isOdd ? 4 : -4 
-          }, 
-          { 
-            x: -150,
-            y: -10,
-            rotation: isOdd ? -2 : 2,
+            x: -150, y: -10, rotation: isOdd ? -2 : 2,
             ease: "none",
             scrollTrigger: {
               trigger: el,
@@ -88,7 +79,6 @@ export default function OfferingsPage() {
           }
         );
 
-        // The Background Parallax: Huge 3D headings sweep independently at a faster velocity
         gsap.fromTo(heading, 
           { x: 450 }, 
           { 
@@ -97,16 +87,48 @@ export default function OfferingsPage() {
             scrollTrigger: {
               trigger: el,
               containerAnimation: scrollTween,
-              start: "left right", // when the left edge of the section hits the right edge of screen
-              end: "right left",   // when the right edge of the section hits the left edge of screen
+              start: "left right",
+              end: "right left",
               scrub: true
             }
           }
         );
       });
+    });
 
-    }, galleryWrapperRef);
-    return () => ctx.revert();
+    mm.add("(max-width: 768px)", () => {
+      const sections = gsap.utils.toArray('.manuscript-item') as HTMLElement[];
+      
+      sections.forEach((el, index) => {
+        const imageBlock = el.querySelector('.manuscript-image-block') as HTMLElement;
+        const heading = el.querySelector('.parallax-heading') as HTMLElement;
+        
+        gsap.from(imageBlock, {
+          y: 60,
+          opacity: 0,
+          duration: 1.2,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+          }
+        });
+
+        gsap.from(heading, {
+          y: 40,
+          opacity: 0,
+          duration: 1,
+          delay: 0.2,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+          }
+        });
+      });
+    });
+
+    return () => mm.revert();
   }, []);
 
   return (
@@ -153,16 +175,16 @@ export default function OfferingsPage() {
         <div ref={galleryWrapperRef} style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
           
           {/* ─── Scroll Progress HUD ─── */}
-          <div style={{
+          <div className="progress-hud" style={{
             position: 'absolute',
             bottom: '6vh',
             left: '10vw',
             right: '10vw',
-            zIndex: 50, // Guarantee position atop background layers and images
+            zIndex: 50, 
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            pointerEvents: 'none' // Ensures users can still interact below horizontally if needed
+            pointerEvents: 'none' 
           }}>
             <span 
               ref={progressTextRef}
@@ -193,7 +215,7 @@ export default function OfferingsPage() {
           </div>
 
           {/* ─── Artistic Background Layer ─── */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
+          <div className="artistic-bg" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.4 }}>
             <svg viewBox="0 0 800 800" style={{ width: '180vh', height: '180vh', animation: 'slowSpin 80s linear infinite', opacity: 0.12 }}>
               <circle cx="400" cy="400" r="390" fill="none" stroke="#b8993e" strokeWidth="2" strokeDasharray="15 30" />
               <circle cx="400" cy="400" r="340" fill="none" stroke="#8b4a2b" strokeWidth="1" />
@@ -204,7 +226,7 @@ export default function OfferingsPage() {
             <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center, transparent 20%, #fdfbf7 85%)' }}></div>
           </div>
 
-          <div ref={galleryContentRef} style={{ display: 'flex', flexWrap: 'nowrap', height: '100%', position: 'relative', zIndex: 1 }}>
+          <div ref={galleryContentRef} className="gallery-track" style={{ display: 'flex', flexWrap: 'nowrap', height: '100%', position: 'relative', zIndex: 1 }}>
             {CARD_CONTENT.map((offering, index) => {
               const isOdd = index % 2 !== 0;
 
@@ -323,10 +345,45 @@ export default function OfferingsPage() {
           overflow-x: hidden;
         }
 
-        /* Responsive dampening for text overlay positioning */
+        /* Responsive adjustments for Offerings Page */
         @media (max-width: 768px) {
+          main {
+            padding-bottom: 10vh !important;
+          }
+          div[ref="galleryWrapperRef"], 
+          div > div[style*="width: 100vw; height: 100vh"] {
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .gallery-track {
+            flex-direction: column !important;
+            height: auto !important;
+            gap: 15vh !important;
+            padding: 10vh 0 !important;
+          }
+          .manuscript-item {
+            height: auto !important;
+            min-height: 60vh !important;
+            margin-bottom: 5vh !important;
+          }
+          .parallax-heading {
+            position: relative !important;
+            top: 0 !important;
+            margin-bottom: -2rem !important;
+            z-index: 5 !important;
+            font-size: clamp(40px, 12vw, 80px) !important;
+            opacity: 1 !important;
+            color: #1A1A1A !important;
+            text-shadow: none !important;
+          }
+          .manuscript-image-block {
+            max-width: 95vw !important;
+          }
           .text-content-layer {
-            width: 85% !important;
+            padding: 25% 10% !important;
+          }
+          .progress-hud, .artistic-bg {
+            display: none !important;
           }
         }
       `}</style>

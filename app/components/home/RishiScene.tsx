@@ -10,7 +10,7 @@ interface Props {
 }
 
 const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: Props) => (
-  <div className="basis-1/2 shrink-0 grow-0 h-full flex items-center justify-end pr-12 relative">
+  <div className="w-full md:basis-1/2 shrink-0 grow-0 h-auto md:h-full flex items-center justify-center md:justify-end md:pr-12 relative mt-8 md:mt-0">
 
     {/* opacity-0 initially — entrance animation fades this in */}
     <div ref={rishiRef} className="opacity-0 relative flex items-center justify-center">
