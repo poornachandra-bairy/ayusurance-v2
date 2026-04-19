@@ -13,7 +13,7 @@ interface Props {
 const HeroText = ({ textRef }: Props) => (
   <div
     ref={textRef}
-    className="flex-1 min-w-0 pr-8 flex flex-col justify-center opacity-0"
+    className="flex-1 min-w-0 pr-0 md:pr-8 flex flex-col items-center md:items-start text-center md:text-left justify-center opacity-0"
   >
     <h1
       className="font-sanskrit font-normal leading-[1.12] tracking-[0.03em] mb-6"

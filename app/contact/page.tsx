@@ -79,23 +79,37 @@ export default function ContactPage() {
   // 3. GSAP Choreography
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Infinite Marquee (Self-Rolling)
-      gsap.to('.kinetic-text', {
-        xPercent: -50,
-        duration: 25,
-        ease: 'none',
-        repeat: -1
+      let mm = gsap.matchMedia();
+
+      mm.add("(min-width: 769px)", () => {
+        // Infinite Marquee (Self-Rolling)
+        gsap.to('.kinetic-text', {
+          xPercent: -50,
+          duration: 25,
+          ease: 'none',
+          repeat: -1
+        });
+
+        // Sub-headline Parallax (Moves on scroll)
+        gsap.to('.sub-headline-wrapper', {
+          y: -150,
+          scrollTrigger: {
+            trigger: 'body',
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1
+          }
+        });
       });
 
-      // Sub-headline Parallax (Moves on scroll)
-      gsap.to('.sub-headline-wrapper', {
-        y: -150,
-        scrollTrigger: {
-          trigger: 'body',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1
-        }
+      mm.add("(max-width: 768px)", () => {
+        // Lighter marquee for mobile
+        gsap.to('.kinetic-text', {
+          xPercent: -50,
+          duration: 15,
+          ease: 'none',
+          repeat: -1
+        });
       });
 
       // Word-by-Word Whisper Reveal
@@ -247,7 +261,7 @@ export default function ContactPage() {
         }}>
           
           {/* Header Row: Company & Badge */}
-          <div className="reveal-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15vh' }}>
+          <div className="reveal-block" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15vh', flexWrap: 'wrap', gap: '1rem' }}>
             <h3 className={playfair.className} style={{ fontSize: 'clamp(20px, 2.5vw, 32px)', color: '#1A1A1A', fontWeight: 500 }}>
               Sadaika Healthcare OPC Pvt Ltd
             </h3>
@@ -264,7 +278,7 @@ export default function ContactPage() {
           </div>
 
           {/* Main Grid: Address & Phone */}
-          <div style={{ 
+          <div className="contact-grid" style={{ 
             display: 'grid', 
             gridTemplateColumns: '1fr 1fr',
             gap: '2rem',
@@ -273,7 +287,7 @@ export default function ContactPage() {
           }}>
             
             {/* Center dividing line for the 'split in middle' feel */}
-            <div style={{
+            <div className="contact-divider" style={{
               position: 'absolute',
               left: '50%',
               top: '-10%',
@@ -284,7 +298,7 @@ export default function ContactPage() {
             }} />
 
             {/* Address (Left) */}
-            <div className="reveal-block" style={{ paddingRight: '4vw' }}>
+            <div className="reveal-block contact-grid-item" style={{ paddingRight: '4vw' }}>
               <div style={{ 
                 display: 'flex', 
                 gap: '1.5rem', 
@@ -321,7 +335,7 @@ export default function ContactPage() {
             </div>
 
             {/* Phone (Right) */}
-            <div className="reveal-block" style={{ paddingLeft: '4vw', transform: 'translateY(10vh)' /* Asymmetric stagger */ }}>
+            <div className="reveal-block contact-grid-item contact-phone-block" style={{ paddingLeft: '4vw' }}>
               <div style={{ width: 'fit-content', margin: '0 auto' }}>
                 <p style={{ fontFamily: 'var(--font-body), sans-serif', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#4A635A', marginBottom: '2rem', textAlign: 'center', transform: 'rotate(2deg)' /* Imperfection */ }}>
                   Direct Line
@@ -444,6 +458,12 @@ export default function ContactPage() {
           .map-portal-container {
             clip-path: inset(5% 10% 5% 10% round 150px);
             height: 50vh;
+          }
+          .contact-divider {
+            display: none !important;
+          }
+          .contact-phone-block {
+            transform: none !important;
           }
         }
       `}</style>

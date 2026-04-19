@@ -27,40 +27,39 @@ export default function AboutPage() {
   const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let ctx = gsap.context(() => {
-      // Create a timeline for the immersive focus
+    let mm = gsap.matchMedia();
+
+    mm.add("(min-width: 769px)", () => {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: viewportRef.current,
           start: "top top",
-          end: "+=600", // Scale naturally over 600px of scroll
+          end: "+=600",
           scrub: 1
         }
       });
 
-      // Darken surrounding bit *subtly*
-      tl.to(overlayRef.current, {
-        opacity: 0.7,
-        ease: "none"
-      }, 0);
+      tl.to(overlayRef.current, { opacity: 0.7, ease: "none" }, 0);
+      tl.to('.header-content', { scale: 0.7, opacity: 0, y: -30, ease: "power2.inOut" }, 0);
+      tl.to(letterRef.current, { scale: 1.25, ease: "power2.inOut" }, 0);
+    });
 
-      // Scale down and fade the headings to sink them into the background
-      tl.to('.header-content', {
-        scale: 0.7,
-        opacity: 0,
-        y: -30,
-        ease: "power2.inOut"
-      }, 0);
+    mm.add("(max-width: 768px)", () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: viewportRef.current,
+          start: "top top",
+          end: "+=400",
+          scrub: 1
+        }
+      });
 
-      // Scale up the letter to pull it toward the user
-      tl.to(letterRef.current, {
-        scale: 1.25,
-        ease: "power2.inOut"
-      }, 0);
+      tl.to(overlayRef.current, { opacity: 0.6, ease: "none" }, 0);
+      tl.to('.header-content', { scale: 0.8, opacity: 0, y: -20, ease: "linear" }, 0);
+      tl.to(letterRef.current, { scale: 1.05, ease: "power2.inOut" }, 0);
+    });
 
-    }, containerRef);
-
-    return () => ctx.revert();
+    return () => mm.revert();
   }, []);
 
   return (
@@ -79,7 +78,7 @@ export default function AboutPage() {
           position: relative;
           background: url('/letter.jpeg') no-repeat center center;
           background-size: 100% 100%;
-          padding: 12% 10% 10% 12%;
+          padding: 16% 8% 10% 8%;
           animation: fadeInUp 0.9s ease 0.1s both;
           width: 100%;
           max-width: 1000px;
