@@ -6,8 +6,16 @@ import Lenis from 'lenis';
 const SmoothScroll = () => {
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      // Higher duration = slower, more cinematic scroll
+      duration: 2.4,
+      // Smooth ease — starts fast, decelerates into a long tail
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -12 * t)),
+      // Limit how much the user can scroll per wheel tick
+      wheelMultiplier: 0.65,
+      // Touch also slowed down
+      touchMultiplier: 0.9,
+      // Smooth on all axis
+      smoothWheel: true,
     });
 
     let rafId: number;

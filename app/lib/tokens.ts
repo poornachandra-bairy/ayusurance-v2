@@ -38,28 +38,23 @@ export const CARD_ACCENTS: Record<string, string> = {
 
 export const CARD_CONTENT = [
   {
-    element: 'Akasha • Space',
-    title: 'Teleconsultations',
-    desc: 'Online consultations with qualified Ayurvedic doctors for personalised guidance and treatment plans.',
+    title: 'Virtual Clinic',
+    desc: 'Experience borderless healing with highly qualified Ayurvedic Vaidyas. Receive deep, personalized consultations and tailored constitutional treatment plans from the absolute comfort of your own sanctuary.',
   },
   {
-    element: 'Vayu • Air',
-    title: 'Concierge Services',
-    desc: 'Dedicated support for users to seamlessly access Ayurvedic services and products.',
+    title: 'Care Concierge',
+    desc: 'Your dedicated wellness advocate. We provide white-glove, seamless technical and clinical support, guiding you effortlessly toward authentic holistic rejuvenation therapies and premium sourced medicinals.',
   },
   {
-    element: 'Agni • Fire',
     title: 'Global Directory',
-    desc: 'A comprehensive list of Ayurveda Vaidyas, practitioners, hospitals, and centres worldwide.',
+    desc: 'Explore the world\'s most comprehensive and rigorously vetted network of elite Ayurveda practitioners, traditional hospitals, and specialized Panchakarma healing sanctuaries across the globe.',
   },
   {
-    element: 'Jala • Water',
-    title: 'Multilingual Support',
-    desc: 'Availability in multiple languages for broader accessibility across cultures.',
+    title: 'Intelligent Matching',
+    desc: 'Our advanced system transcends borders and cultures, matching your precise physiological constitution, astrological blueprint, and cultural preferences directly with the perfect authentic healer.',
   },
   {
-    element: 'Bhumi • Earth',
     title: 'Expert Network',
-    desc: 'A team of experienced Ayurvedic professionals offering consultations and guidance.',
+    desc: 'Join an exclusive ecosystem of internationally acclaimed Ayurvedic researchers, holistic academics, and generational healers actively collaborating to ensure your absolute and complete wellbeing.',
   },
 ] as const;

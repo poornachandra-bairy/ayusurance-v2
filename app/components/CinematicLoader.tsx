@@ -1,119 +1,172 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  LOADER_BRAND_NAME,
-  LOADER_TAGLINE,
-  SHLOKA_1_TEXT,
-  SHLOKA_1_LINE2,
-  SHLOKA_1_ATTR,
-  SHLOKA_2_TEXT,
-  SHLOKA_2_LINE2,
-  SHLOKA_2_ATTR,
-} from '../constants';
+import { useEffect, useRef } from 'react';
+import { LOADER_BRAND_AYU, LOADER_BRAND_SUFFIX } from '../constants';
 
-type Phase = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+// ── Grid geometry ────────────────────────────────────────────────────────────
+const BOX_SIZE = 56;   // px
+const GAP      = 12;   // px
+const GRID_W   = BOX_SIZE * 2 + GAP;  // 124px
+const GRID_H   = BOX_SIZE * 2 + GAP;  // 124px
 
-const PHASES: { at: number; to: Phase }[] = [
-  { at: 0,    to: 0 },
-  { at: 200,  to: 1 },
-  { at: 700,  to: 2 },
-  { at: 1500, to: 3 },
-  { at: 2600, to: 4 },
-  { at: 3400, to: 5 },
-  { at: 6800, to: 6 },
-  { at: 9300, to: 7 },
-];
+const SLOTS = [
+  { dx: -(BOX_SIZE / 2 + GAP / 2), dy: -(BOX_SIZE / 2 + GAP / 2) },
+  { dx:  (BOX_SIZE / 2 + GAP / 2), dy: -(BOX_SIZE / 2 + GAP / 2) },
+  { dx: -(BOX_SIZE / 2 + GAP / 2), dy:  (BOX_SIZE / 2 + GAP / 2) },
+  { dx:  (BOX_SIZE / 2 + GAP / 2), dy:  (BOX_SIZE / 2 + GAP / 2) },
+] as const;
 
-const CinematicLoader = ({ onComplete }: { onComplete: () => void }) => {
-  const [phase, setPhase] = useState<Phase>(0);
+const DELAYS   = [0, 130, 260, 390];   // ms stagger per box
+const DROP_H   = 320;                   // px to fall
+const FALL_MS  = 520;                   // fall duration
+const DECAY    = 0.42;                  // bounce amplitude decay
+const BOUNCE   = 190;                   // bounce half-period ms
+
+const easeIn  = (t: number) => t * t * t;
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface Props { onComplete: () => void; }
+
+const CinematicLoader = ({ onComplete }: Props) => {
+  const boxRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timers = PHASES.map(({ at, to }) =>
-      setTimeout(() => setPhase(to), at),
-    );
-    const done = setTimeout(() => onComplete(), 10200);
-    return () => { timers.forEach(clearTimeout); clearTimeout(done); };
-  }, [onComplete]);
+    let raf = 0;
+    const t0 = performance.now();
 
-  const exiting = phase === 7;
+    const fallStart = DELAYS.map(d => t0 + d);
+    const landTime  = DELAYS.map(d => t0 + d + FALL_MS);
+    const maxLand   = Math.max(...landTime);
+
+    const logoStart  = maxLand + 280;
+    const exitStart  = logoStart + 1900;
+    const completeAt = exitStart + 900;
+
+    const tick = (now: number) => {
+      // ── Boxes ──────────────────────────────────────────────────────────────
+      SLOTS.forEach((slot, i) => {
+        const el      = boxRefs.current[i];
+        if (!el) return;
+        const elapsed = now - fallStart[i];
+
+        if (elapsed < 0) {
+          el.style.opacity   = '0';
+          el.style.transform = `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy - DROP_H}px))`;
+          return;
+        }
+
+        // Fall
+        if (elapsed < FALL_MS) {
+          const y = -DROP_H + DROP_H * easeIn(elapsed / FALL_MS);
+          el.style.opacity   = '1';
+          el.style.boxShadow = 'none';
+          el.style.transform = `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy + y}px))`;
+          return;
+        }
+
+        // Bounce
+        const after  = elapsed - FALL_MS;
+        let remain   = after;
+        let amp      = DROP_H * 0.32;
+        let bounceY  = 0;
+        let sx = 1, sy = 1;
+        const period = BOUNCE * 2;
+
+        while (remain >= 0 && amp > 1.5) {
+          if (remain < period) {
+            bounceY = -amp * Math.sin((remain / period) * Math.PI);
+            const g = 1 - Math.abs(bounceY) / amp;
+            sx = 1 + g * 0.20;
+            sy = 1 - g * 0.18;
+            break;
+          }
+          remain -= period;
+          amp    *= DECAY;
+        }
+
+        const glow = Math.max(0, 1 - after / 700);
+        el.style.opacity   = '1';
+        el.style.boxShadow = glow > 0.02
+          ? `0 0 ${14 * glow}px ${5 * glow}px rgba(200,130,26,${0.5 * glow})`
+          : 'none';
+        el.style.transform = `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy + bounceY}px)) scaleX(${sx.toFixed(4)}) scaleY(${sy.toFixed(4)})`;
+      });
+
+      // ── Logo fade-in ────────────────────────────────────────────────────
+      if (logoRef.current) {
+        const le = now - logoStart;
+        if (le < 0) {
+          logoRef.current.style.opacity   = '0';
+          logoRef.current.style.transform = 'translateY(14px)';
+        } else {
+          const e = easeOut(Math.min(1, le / 650));
+          logoRef.current.style.opacity   = String(e);
+          logoRef.current.style.transform = `translateY(${(1 - e) * 14}px)`;
+        }
+      }
+
+      // ── Exit fade ────────────────────────────────────────────────────────
+      if (wrapRef.current) {
+        const xe = now - exitStart;
+        if (xe >= 0) {
+          wrapRef.current.style.opacity = String(1 - easeOut(Math.min(1, xe / 900)));
+        }
+      }
+
+      if (now >= completeAt) { onComplete(); return; }
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [onComplete]);
 
   return (
     <div
-      className={[
-        'fixed inset-0 z-[9999] bg-loader',
-        'flex flex-col items-center justify-center overflow-hidden',
-        'transition-opacity duration-1000 ease-[cubic-bezier(0.4,0,0.6,1)]',
-        exiting ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto',
-      ].join(' ')}
+      ref={wrapRef}
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+      style={{
+        background: 'linear-gradient(160deg, #fdf8ee 0%, #f3e6c0 25%, #e4f0d8 55%, #cce8df 80%, #b8dfd6 100%)',
+      }}
     >
-      {phase >= 1 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="cl-ring-cw absolute w-[70vmin] h-[70vmin] rounded-full border border-[rgba(80,110,60,0.18)]" />
-          <div className="cl-ring-ccw absolute w-[56vmin] h-[56vmin] rounded-full border border-[rgba(140,100,40,0.14)]" />
-          <div className="cl-ring-cw2 absolute w-[42vmin] h-[42vmin] rounded-full" style={{ border: '0.5px solid rgba(80,110,60,0.10)' }} />
+      {/* 2×2 grid */}
+      <div
+        className="relative flex-shrink-0"
+        style={{ width: GRID_W, height: GRID_H }}
+      >
+        {SLOTS.map((slot, i) => (
           <div
-            className="absolute w-[50vmin] h-[50vmin] rounded-full animate-[bgBreath_5s_ease-in-out_infinite]"
-            style={{ background: 'radial-gradient(circle, rgba(255,240,200,0.18) 0%, transparent 70%)' }}
+            key={i}
+            ref={el => { boxRefs.current[i] = el; }}
+            className="absolute top-1/2 left-1/2 rounded-[3px] will-change-transform"
+            style={{
+              width:           BOX_SIZE,
+              height:          BOX_SIZE,
+              border:          '2.5px solid #c8821a',
+              opacity:         0,
+              transformOrigin: 'bottom center',
+              transform:       `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy - DROP_H}px))`,
+            }}
           />
-        </div>
-      )}
+        ))}
+      </div>
 
-      <div className="relative z-[2] flex flex-col items-center w-full">
-
-        {phase >= 2 && (
-          <div className="cl-rule-grow h-px w-[200px] mb-[2.8rem] bg-[linear-gradient(90deg,transparent,rgba(130,95,35,0.65),transparent)]" />
-        )}
-
-        {phase >= 3 && (
-          <h1
-            className="cl-title-in font-display font-bold text-[#283820] tracking-[0.1em] leading-none mb-[0.8rem] whitespace-nowrap [text-shadow:0_2px_24px_rgba(60,90,40,0.15)]"
-            style={{ fontSize: 'clamp(1.8rem, 5.5vw, 5rem)' }}
-          >
-            {LOADER_BRAND_NAME}
-          </h1>
-        )}
-
-        {phase >= 4 && (
-          <p className="cl-fade-up mb-12 font-sans text-[9.5px] tracking-[0.38em] uppercase text-[rgba(60,80,35,0.60)] text-center">
-            {LOADER_TAGLINE}
-          </p>
-        )}
-
-        {phase >= 2 && (
-          <div className="cl-rule-grow h-px w-[200px] mb-[3.2rem] bg-[linear-gradient(90deg,transparent,rgba(130,95,35,0.65),transparent)]" />
-        )}
-
-        {phase === 5 && (
-          <div className="cl-shloka-in min-h-[120px] text-center">
-            <p
-              className="font-serif italic font-normal text-[rgba(40,56,28,0.82)] leading-[2] mb-[1.1rem] text-center"
-              style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.75rem)' }}
-            >
-              {SHLOKA_1_TEXT}<br />
-              {SHLOKA_1_LINE2}
-            </p>
-            <span className="text-[9px] tracking-[0.22em] text-[rgba(60,80,35,0.52)] uppercase font-sans">
-              {SHLOKA_1_ATTR}
-            </span>
-          </div>
-        )}
-
-        {phase >= 6 && phase < 7 && (
-          <div className="cl-shloka-in min-h-[120px] text-center">
-            <p
-              className="font-serif italic font-normal text-[rgba(40,56,28,0.82)] leading-[2] mb-[1.1rem] text-center"
-              style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.75rem)' }}
-            >
-              {SHLOKA_2_TEXT}<br />
-              {SHLOKA_2_LINE2}
-            </p>
-            <span className="text-[9px] tracking-[0.22em] text-[rgba(60,80,35,0.52)] uppercase font-sans">
-              {SHLOKA_2_ATTR}
-            </span>
-          </div>
-        )}
-
+      {/* Logotype — "ayu" under grid, "surance" extends right */}
+      <div
+        ref={logoRef}
+        className="flex items-baseline mt-4 will-change-transform"
+        style={{ opacity: 0 }}
+      >
+        <span className="font-display font-semibold leading-none whitespace-nowrap text-[4rem] tracking-[0.12em] text-[#c8821a]">
+          {LOADER_BRAND_AYU}
+        </span>
+        <span className="font-display font-semibold leading-none whitespace-nowrap text-[4rem] tracking-[0.06em] text-text-700">
+          {LOADER_BRAND_SUFFIX}
+        </span>
       </div>
     </div>
   );

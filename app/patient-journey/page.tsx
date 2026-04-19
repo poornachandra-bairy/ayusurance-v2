@@ -1,282 +1,392 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Navbar from '../components/Navbar';
-import MandalaBackground from '../components/MandalaBackground';
-import JourneyStackCard from './JourneyStackCard';
+import Image from 'next/image';
 import { JOURNEY_STEPS } from './patientJourneyData';
-import {
-  JOURNEY_CTA_EYEBROW,
-  JOURNEY_CTA_HEADLINE,
-  JOURNEY_CTA_BODY,
-  JOURNEY_CTA_LABEL,
-  JOURNEY_CTA_HREF,
-  JOURNEY_CTA_FOOTER,
-} from '../constants';
+import { SHLOKAS } from '../constants';
 
-// Each card reveal uses this many vh of scroll distance
-const VH_PER_CARD = 120;
-const TOTAL_VH = JOURNEY_STEPS.length * VH_PER_CARD + 60;
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const ease  = (t: number) => t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+const lerp  = (a: number, b: number, t: number) => a + (b - a) * t;
+const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+const ph    = (p: number, a: number, b: number) => clamp((p - a) / (b - a), 0, 1);
 
-// Fixed pixel height of each collapsed tab header
-const TAB_H = 64;
+// ── Sheet definitions ─────────────────────────────────────────────────────────
+const SHEETS = [
+  {
+    frontType: 'cover',
+    backType: 'inside-cover',
+    frontData: { title: 'Patient Journey', subtitle: 'Your Healing Journey', desc: 'Scroll to begin' },
+    backData: {}
+  },
+  { frontType: 'step', backType: 'step', frontData: JOURNEY_STEPS[0], backData: JOURNEY_STEPS[1] },
+  { frontType: 'step', backType: 'step', frontData: JOURNEY_STEPS[2], backData: JOURNEY_STEPS[3] },
+  { frontType: 'step', backType: 'step', frontData: JOURNEY_STEPS[4], backData: JOURNEY_STEPS[5] },
+  { frontType: 'step', backType: 'step', frontData: JOURNEY_STEPS[6], backData: JOURNEY_STEPS[7] },
+  {
+    frontType: 'inside-backcover',
+    backType: 'backcover',
+    frontData: {},
+    backData: { title: 'Complete Wellness', desc: 'Your path to harmony and balance is ongoing. We stand by you every step of the way.' }
+  }
+];
 
-// Estimated expanded body height — used only to size the container
-const EXPANDED_BODY_H = 360;
+// ── Scroll units ──────────────────────────────────────────────────────────────
+// INTRO_UNITS: scroll space for the title-fade + book-scale-up animation
+// FLIPS: one unit per sheet flip
+// Total progress: 0 → INTRO_UNITS + FLIPS
+const FLIPS        = SHEETS.length;   // 6
+const INTRO_UNITS  = 1.5;
+const OUTRO_UNITS  = 1.5;             // scroll space to scale book back down
+const TOTAL_UNITS  = INTRO_UNITS + FLIPS + OUTRO_UNITS;
 
-const PatientJourneyPage = () => {
-  const scrollWrapRef = useRef<HTMLDivElement>(null);
-
-  const [revealedCount, setRevealedCount] = useState(0);
-  const [activeId, setActiveId] = useState<number | null>(null);
-
-  const progressBarRef = useRef<HTMLDivElement>(null);
-  const progressTextRef = useRef<HTMLSpanElement>(null);
-
-  // Tracks whether the user has manually clicked a card
-  const userSelectedRef = useRef(false);
-  // Stable reference to latest revealedCount inside rAF without re-subscribing
-  const revealedRef = useRef(0);
-  const activeIdRef = useRef<number | null>(null);
-  const rafIdRef = useRef<number | null>(null);
-  const ticking = useRef(false);
-
-  const handleSelect = useCallback((id: number) => {
-    userSelectedRef.current = true;
-    setActiveId((prev) => (prev === id ? null : id));
-    activeIdRef.current = id;
-  }, []);
+export default function PatientJourneyPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0); // 0 → TOTAL_UNITS
 
   useEffect(() => {
-    const update = () => {
-      ticking.current = false;
-      const wrap = scrollWrapRef.current;
-      if (!wrap) return;
-
-      const { top } = wrap.getBoundingClientRect();
-      const scrollable = wrap.offsetHeight - window.innerHeight;
-      if (scrollable <= 0) return;
-
-      const progress = Math.min(1, Math.max(0, -top / scrollable));
-      const raw = progress * JOURNEY_STEPS.length;
-      // How many cards should be visible right now
-      const toReveal = Math.min(JOURNEY_STEPS.length, Math.floor(raw) + 1);
-
-      // Direct DOM update for 60fps smooth scrolling without React re-renders
-      if (progressBarRef.current) {
-        progressBarRef.current.style.width = `${(progress * 100).toFixed(1)}%`;
-      }
-      if (progressTextRef.current) {
-        progressTextRef.current.textContent = `${Math.round(progress * 100)}% revealed`;
-      }
-
-      if (toReveal !== revealedRef.current) {
-        revealedRef.current = toReveal;
-        setRevealedCount(toReveal);
-      }
-
-      // Only auto-advance the active card if the user hasn't manually chosen one
-      if (!userSelectedRef.current) {
-        const targetId = JOURNEY_STEPS[Math.min(toReveal - 1, JOURNEY_STEPS.length - 1)].id;
-        if (targetId !== activeIdRef.current) {
-          activeIdRef.current = targetId;
-          setActiveId(targetId);
-        }
-      }
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const rect      = containerRef.current.getBoundingClientRect();
+      const maxScroll = rect.height - window.innerHeight;
+      const current   = -rect.top;
+      const p = clamp((current / maxScroll) * TOTAL_UNITS, 0, TOTAL_UNITS);
+      setScrollProgress(p);
     };
-
-    const onScroll = () => {
-      if (!ticking.current) {
-        ticking.current = true;
-        rafIdRef.current = requestAnimationFrame(update);
-      }
-    };
-
-    // Support both native scroll and Lenis (which still dispatches on window)
-    window.addEventListener('scroll', onScroll, { passive: true });
-    // Fire once on mount so initial state is set even before scrolling
-    update();
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
-    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const activeIndex = JOURNEY_STEPS.findIndex((s) => s.id === activeId);
-  const safeActiveIndex = activeIndex === -1 ? 0 : activeIndex;
+  // ── Derived animation values ──────────────────────────────────────────────
+  const introP = clamp(scrollProgress / INTRO_UNITS, 0, 1);
+  const bookP  = clamp(scrollProgress - INTRO_UNITS, 0, FLIPS);
+  const outroP = clamp((scrollProgress - INTRO_UNITS - FLIPS) / OUTRO_UNITS, 0, 1);
 
-  // Container must be tall enough to hold all tab headers + the expanded body
-  const stackHeight = TAB_H * JOURNEY_STEPS.length + EXPANDED_BODY_H;
+  // ── Text zooming
+  const titleScale = lerp(1, 0, ease(introP));
+  const outroScale = lerp(0, 1, ease(outroP));
+
+  // ── Book scale:
+  //   0 → INTRO  : 0.45 → 1.0  (scale up)
+  //   INTRO → END: 1.0  → 1.0  (hold, with subtle open-pulse)
+  //   OUTRO       : 1.0  → 0.45 (scale back down)
+  const INITIAL_BOOK_SCALE = 0.45;
+  let baseScale: number;
+  if (scrollProgress <= INTRO_UNITS) {
+    baseScale = lerp(INITIAL_BOOK_SCALE, 1.0, ease(ph(scrollProgress, 0, INTRO_UNITS)));
+  } else if (scrollProgress <= INTRO_UNITS + FLIPS) {
+    baseScale = 1.0;
+  } else {
+    baseScale = lerp(1.0, INITIAL_BOOK_SCALE, ease(outroP));
+  }
+
+  const bookScale = baseScale;
+
+  // Book X & Y: moves DOWN during intro/outro to clear the text above it.
+  // X shifts by -24% (intro) and +24% (outro) so the single visible page is centered!
+  // When reading (scale = 1), bookY and bookX are exactly 0 (true center).
+  let bookX: number;
+  let bookY: number;
+  if (scrollProgress <= INTRO_UNITS) {
+    const t = ease(ph(scrollProgress, 0, INTRO_UNITS));
+    bookX = lerp(-24, 0, t);
+    bookY = lerp(70, 0, t);
+  } else if (scrollProgress <= INTRO_UNITS + FLIPS) {
+    bookX = 0;
+    bookY = 0;
+  } else {
+    const t = ease(outroP);
+    bookX = lerp(0, 24, t);
+    bookY = lerp(0, 70, t);
+  }
+
+  // Background overlay: darkens simultaneously with zoom in, fades during zoom out
+  const overlayOpacity = scrollProgress <= INTRO_UNITS
+    ? lerp(0, 0.65, ease(introP))
+    : scrollProgress < INTRO_UNITS + FLIPS
+      ? 0.65
+      : lerp(0.65, 0, ease(outroP));
 
   return (
     <>
       <Navbar />
 
-      {/* ── Hero ── */}
-      <section className="relative min-h-screen bg-hero overflow-hidden flex flex-col items-center justify-center text-center px-8 pt-28 pb-20">
-        <MandalaBackground />
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <p className="text-[9.5px] tracking-[0.35em] uppercase text-text-400 font-body font-medium mb-7">
-            8 Steps · Your Healing Path
-          </p>
-          <h1
-            className="font-display font-bold text-text-900 leading-[1.06] tracking-[0.02em] mb-6"
-            style={{ fontSize: 'clamp(2.8rem, 7vw, 5.5rem)' }}
-          >
-            Your Patient<br />Journey
-          </h1>
-          <p
-            className="font-body text-text-500 leading-[1.85] mx-auto mb-12 max-w-[42ch]"
-            style={{ fontSize: 'clamp(1rem, 1.8vw, 1.2rem)' }}
-          >
-            Scroll to reveal each step of your healing path — from first contact to ongoing wellness.
-          </p>
-          <div className="flex flex-col items-center gap-2 animate-[bounceUp_2.2s_ease-in-out_infinite]">
-            <span className="text-[9px] tracking-[0.3em] text-text-300 uppercase font-body">Scroll to begin</span>
-            <div className="w-px h-12 bg-gradient-to-b from-text-300/50 to-transparent" />
-          </div>
-        </div>
-      </section>
-
-      {/* ── Sticky dossier scroll section ── */}
-      <div
-        ref={scrollWrapRef}
-        className="relative"
-        style={{ height: `${TOTAL_VH}vh` }}
+      {/* Scrollable track */}
+      <main
+        ref={containerRef}
+        className="relative overflow-x-clip bg-transparent"
+        style={{ height: `${TOTAL_UNITS * 120 + 100}vh` }}
       >
-        <div
-          className="sticky top-0 h-screen bg-hero overflow-hidden"
-          aria-label="Patient Journey Interactive Dossier"
-        >
-          {/* Single mandala, lighter opacity inside the interactive pane */}
-          <MandalaBackground />
+        {/* ── Sticky viewport ── */}
+        {/* pt-[76px] = navbar height so book never goes under nav */}
+        <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden pt-[76px]">
 
-          <div className="relative z-10 h-full flex flex-col px-6 sm:px-10 pt-24 pb-6">
-
-            {/* ── Header bar ── */}
-            <div className="flex items-center justify-between mb-6 max-w-3xl mx-auto w-full">
-              <div>
-                <p className="text-[9px] tracking-[0.3em] uppercase text-text-400 font-body mb-0.5">Patient Journey</p>
-                <p className="font-display font-semibold text-text-900 text-base tracking-[0.02em]">Ayusurance</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1.5 items-center">
-                  {JOURNEY_STEPS.map((step, i) => (
-                    <button
-                      key={step.id}
-                      onClick={() => { if (i < revealedCount) handleSelect(step.id); }}
-                      disabled={i >= revealedCount}
-                      aria-label={`Go to step ${step.id}: ${step.title}`}
-                      className="rounded-full transition-all duration-500 focus:outline-none focus-visible:ring-2"
-                      style={{
-                        width: activeId === step.id ? '18px' : '6px',
-                        height: '6px',
-                        background: i >= revealedCount
-                          ? 'rgba(90,100,88,0.12)'
-                          : activeId === step.id
-                            ? step.accentColor
-                            : 'rgba(90,100,88,0.30)',
-                        opacity: i >= revealedCount ? 0.3 : 1,
-                      }}
-                    />
-                  ))}
-                </div>
-                <span className="font-display text-text-400 text-sm tracking-[0.06em] tabular-nums">
-                  {String(revealedCount).padStart(2, '0')}&thinsp;/&thinsp;{String(JOURNEY_STEPS.length).padStart(2, '0')}
-                </span>
-              </div>
-            </div>
-
-            {/* ── Stack container — inner scrollable on small screens ── */}
-            <div className="relative max-w-3xl mx-auto w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div
-                className="relative w-full"
-                style={{ height: `${stackHeight}px` }}
-              >
-                {JOURNEY_STEPS.map((step, index) => (
-                  <JourneyStackCard
-                    key={step.id}
-                    step={step}
-                    index={index}
-                    activeIndex={safeActiveIndex}
-                    isActive={activeId === step.id}
-                    isRevealed={index < revealedCount}
-                    pushDown={EXPANDED_BODY_H}
-                    onSelect={handleSelect}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* ── Progress bar ── */}
-            <div className="mt-4 max-w-3xl mx-auto w-full">
-              <div className="h-[2px] rounded-full bg-[rgba(90,100,88,0.08)] overflow-hidden">
-                <div
-                  ref={progressBarRef}
-                  className="h-full rounded-full transition-[width] duration-75 ease-out"
-                  style={{
-                    width: '0%',
-                    background: 'linear-gradient(90deg, #a8843e, #7a9e7e)',
-                  }}
-                />
-              </div>
-              <div className="flex items-center justify-between mt-1.5">
-                <span className="text-[8.5px] tracking-[0.22em] uppercase font-body text-text-300">Your path</span>
-                <span ref={progressTextRef} className="text-[8.5px] tracking-[0.22em] uppercase font-body text-text-300 tabular-nums">
-                  0% revealed
-                </span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      {/* ── CTA ── */}
-      <section
-        className="relative px-8 text-center overflow-hidden bg-hero"
-        style={{
-          paddingTop: 'clamp(5rem, 10vw, 9rem)',
-          paddingBottom: 'clamp(5rem, 10vw, 9rem)',
-        }}
-      >
-        <MandalaBackground />
-        <div className="relative z-10 max-w-2xl mx-auto">
+          {/* Dark overlay when book is reading */}
           <div
-            className="w-12 h-px mx-auto mb-8"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(168,132,62,0.5), transparent)' }}
+            className="absolute inset-0 z-0 pointer-events-none"
+            style={{ background: `rgba(15,22,15,${overlayOpacity})` }}
           />
-          <p className="text-[9.5px] tracking-[0.32em] uppercase text-text-400 font-body font-medium mb-5">
-            {JOURNEY_CTA_EYEBROW}
-          </p>
-          <h2
-            className="font-display font-bold text-text-900 mb-5 tracking-[0.03em] leading-[1.1]"
-            style={{ fontSize: 'clamp(2rem, 5vw, 3.6rem)' }}
-          >
-            {JOURNEY_CTA_HEADLINE}
-          </h2>
-          <p className="font-body text-text-500 max-w-[44ch] mx-auto mb-12 leading-[1.85] text-[1.02rem]">
-            {JOURNEY_CTA_BODY}
-          </p>
-          <a
-            href={JOURNEY_CTA_HREF}
-            className="inline-flex items-center gap-3 px-10 py-4 rounded-xl font-body font-medium text-[0.85rem] tracking-[0.14em] uppercase text-white no-underline transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-soft"
+
+          {/* ── Intro title — top-centre, zooms out ── */}
+          <div
+            className="absolute z-20 text-center pointer-events-none select-none px-6"
             style={{
-              background: 'linear-gradient(135deg, #b8934c 0%, #6c875b 100%)',
-              boxShadow: '0 10px 32px rgba(168,132,62,0.22)',
+              top: '12%',
+              left: '50%',
+              transform: `translate(-50%, 0) scale(${titleScale})`,
+              opacity: titleScale > 0 ? 1 : 0,
             }}
           >
-            {JOURNEY_CTA_LABEL}
-            <span className="opacity-75">→</span>
-          </a>
-          <p className="mt-16 text-[10px] text-text-300 tracking-[0.08em] font-body">
-            {JOURNEY_CTA_FOOTER}
-          </p>
+            <div className="flex justify-center mb-5">
+              <svg viewBox="0 0 100 100" fill="none" stroke="#a8843e" strokeWidth="2" width="40" height="40" className="opacity-80">
+                <path d="M50 10 L90 50 L50 90 L10 50 Z" />
+                <circle cx="50" cy="50" r="15" />
+              </svg>
+            </div>
+            <h1 className="font-display text-[clamp(2.4rem,5vw,4.2rem)] text-[#3b4a38] leading-[1.0] mb-4" style={{ fontWeight: 400 }}>
+              Your Path to Wellness
+            </h1>
+            <p className="text-[#556353] font-body text-sm md:text-base leading-relaxed max-w-[38ch] mx-auto">
+              A transparent, seamless clinical process combining authentic Ayurvedic protocols with modern convenience.
+            </p>
+          </div>
+
+          {/* ── Outro text — top-centre, zooms in ── */}
+          <div
+            className="absolute z-20 text-center pointer-events-none select-none px-6"
+            style={{
+              top: '12%',
+              left: '50%',
+              transform: `translate(-50%, 0) scale(${outroScale})`,
+              opacity: outroScale > 0 ? 1 : 0,
+            }}
+          >
+            <div className="flex justify-center mb-5">
+              <svg viewBox="0 0 100 100" fill="none" stroke="#a8843e" strokeWidth="2" width="40" height="40" className="opacity-80">
+                <circle cx="50" cy="50" r="40" />
+                <circle cx="50" cy="50" r="20" />
+              </svg>
+            </div>
+            <h2 className="font-display text-[clamp(2.4rem,5vw,4rem)] text-[#3b4a38] leading-tight mb-4" style={{ fontWeight: 400 }}>A Restored Balance</h2>
+            <p className="text-[#556353] font-body text-sm md:text-base leading-relaxed max-w-[38ch] mx-auto">
+              You have reached the end of the initial clinical protocol. True wellness is a continuous commitment — and we remain by your side.
+            </p>
+          </div>
+
+          {/* ── Book container — height avoids navbar; width constrained ── */}
+          <div
+            className="relative z-10 w-full max-w-[1400px] will-change-transform"
+            style={{
+              height: 'calc(100vh - 100px)',
+              transform: `translate(${bookX * bookScale}%, ${bookY}px) scale(${bookScale})`,
+              transformOrigin: 'center center',
+              perspective: '3000px',
+              opacity: 1,
+            }}
+          >
+            {/* Spine shadow */}
+            <div className="absolute top-0 bottom-0 left-1/2 w-20 -ml-10 bg-gradient-to-r from-transparent via-black/15 to-transparent z-50 pointer-events-none" />
+
+            {/* Sheets */}
+            {SHEETS.map((sheet, idx) => {
+              const sheetP   = clamp(bookP - idx, 0, 1);
+              const rotation = -180 * sheetP;
+
+              let zIndex = 20 - idx;
+              if (sheetP > 0 && sheetP < 1) zIndex = 50 + idx;
+              if (sheetP === 1) zIndex = 20 + idx;
+
+              const isCoverSheet = idx === 0 || idx === FLIPS - 1;
+              const shadowStyle  = isCoverSheet
+                ? 'shadow-[2px_12px_25px_rgba(0,0,0,0.4)]'
+                : 'shadow-[1px_4px_10px_rgba(0,0,0,0.12)]';
+
+              // True 3D volume parameters
+              const T = isCoverSheet ? 16 : 8; // Thickness in pixels
+              const edgeColor = isCoverSheet ? '#18281d' : '#dabe9b';
+
+              return (
+                <div
+                  key={idx}
+                  className={`absolute top-[1vh] bottom-[1vh] left-[50%] right-[3%] lg:right-[calc(50vw-680px)] origin-left will-change-transform ${shadowStyle}`}
+                  style={{ transform: `rotateY(${rotation}deg)`, zIndex, transformStyle: 'preserve-3d' }}
+                >
+                  {/* Front face */}
+                  <div
+                    className={`absolute inset-0 overflow-hidden flex`}
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: `translateZ(${T/2}px)` }}
+                  >
+                    <RenderPage type={sheet.frontType} data={sheet.frontData} side="right" />
+                  </div>
+                  
+                  {/* Back face */}
+                  <div
+                    className={`absolute inset-0 overflow-hidden flex`}
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: `rotateY(180deg) translateZ(${T/2}px)` }}
+                  >
+                    <RenderPage type={sheet.backType} data={sheet.backData} side="left" />
+                  </div>
+
+                  {/* Right Edge (Solid 3D Wall) */}
+                  <div 
+                    className="absolute top-0 bottom-0"
+                    style={{ right: `-${T/2}px`, width: `${T}px`, background: edgeColor, transform: 'rotateY(90deg)' }} 
+                  />
+                  {/* Bottom Edge */}
+                  <div 
+                    className="absolute left-0 right-0"
+                    style={{ bottom: `-${T/2}px`, height: `${T}px`, background: edgeColor, transform: 'rotateX(-90deg)' }} 
+                  />
+                  {/* Top Edge */}
+                  <div 
+                    className="absolute left-0 right-0"
+                    style={{ top: `-${T/2}px`, height: `${T}px`, background: edgeColor, transform: 'rotateX(90deg)' }} 
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Scroll hint — Intro */}
+          <div
+            className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
+            style={{ opacity: clamp(1 - scrollProgress * 5, 0, 1) }}
+          >
+            <span className="animate-pulse text-[11px] md:text-sm font-extrabold tracking-[0.5em] uppercase text-[#2b4230] drop-shadow-sm">
+              Scroll Down
+            </span>
+            <div className="flex flex-col items-center text-[#2b4230] animate-bounce mt-1">
+              <svg className="w-6 h-6 md:w-8 md:h-8 -mb-4 opacity-70" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+              <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Scroll hint — Outro */}
+          <div
+            className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none transition-opacity duration-700"
+            style={{ opacity: outroScale > 0.5 ? 1 : 0 }}
+          >
+            <div className="flex flex-col items-center text-[#2b4230] animate-bounce mb-1">
+              <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+              <svg className="w-6 h-6 md:w-8 md:h-8 -mt-4 opacity-70" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+            </div>
+            <span className="animate-pulse text-[11px] md:text-sm font-extrabold tracking-[0.5em] uppercase text-[#2b4230] drop-shadow-sm">
+              Scroll Up
+            </span>
+          </div>
+
         </div>
-      </section>
+      </main>
     </>
   );
-};
+}
 
-export default PatientJourneyPage;
+// ── Page renderer ─────────────────────────────────────────────────────────────
+function RenderPage({ type, data, side }: { type: string; data: any; side: 'left' | 'right' }) {
+  const isLeft = side === 'left';
+
+  const paperTexture = {
+    backgroundColor: '#fbf8f1',
+    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E")`,
+    boxShadow: isLeft ? 'inset -30px 0 50px rgba(0,0,0,0.06)' : 'inset 30px 0 50px rgba(0,0,0,0.06)'
+  };
+
+  if (type === 'cover') {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-8 md:p-16 text-center bg-[#2b4230] relative border-l border-black/20" style={{ boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5)' }}>
+        <div className="absolute top-0 bottom-0 left-[2%] w-4 bg-gradient-to-r from-black/60 via-transparent to-black/30" />
+        <div className="absolute inset-4 md:inset-8 border-2 border-[#a8843e]/40 rounded-lg pointer-events-none" />
+        <div className="absolute inset-5 md:inset-9 border border-[#a8843e]/20 rounded-lg pointer-events-none" />
+        <div className="w-20 h-20 md:w-32 md:h-32 border-2 border-[#a8843e] rounded-full flex items-center justify-center mb-8 bg-[#2b4230] shadow-[0_0_30px_rgba(168,132,62,0.2)]">
+          <span className="text-4xl md:text-6xl text-[#e6d7b1]">ॐ</span>
+        </div>
+        <h2 className="text-[10px] md:text-sm font-sans tracking-[0.4em] text-[#a9bc97] uppercase mb-4">{data.title}</h2>
+        <h1 className="text-5xl md:text-7xl font-display font-medium text-[#f8f4ea] drop-shadow-lg mb-6 max-w-[12ch]">{data.subtitle}</h1>
+        <p className="text-[#a9bc97] italic font-serif text-sm md:text-lg">{data.desc}</p>
+      </div>
+    );
+  }
+
+  if (type === 'backcover') {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-8 md:p-16 text-center bg-[#2b4230] relative border-r border-black/20" style={{ boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5)' }}>
+        <div className="absolute top-0 bottom-0 right-[2%] w-4 bg-gradient-to-l from-black/60 via-transparent to-black/30" />
+        <div className="absolute inset-4 md:inset-8 border-2 border-[#a8843e]/40 rounded-lg pointer-events-none" />
+        <h1 className="text-4xl md:text-5xl font-display font-medium text-[#f8f4ea] mb-6 drop-shadow-md">{data.title}</h1>
+        <p className="text-[#a9bc97] font-body text-sm md:text-lg max-w-[30ch] mb-12">{data.desc}</p>
+        <button className="px-8 py-3 border border-[#a8843e] text-[#e6d7b1] tracking-widest text-xs uppercase hover:bg-[#a8843e] hover:text-[#2b4230] transition-colors rounded shadow-lg">
+          Begin Consultation
+        </button>
+      </div>
+    );
+  }
+
+  if (type === 'inside-cover') {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-8 md:p-12 text-center" style={paperTexture}>
+        <div className="w-32 h-32 md:w-48 md:h-48 relative mb-8 mix-blend-multiply opacity-90 select-none pointer-events-none">
+          <Image src="/rishi.png" alt="Ayurvedic Rishi" fill className="object-contain" priority />
+        </div>
+        <h3 className="text-lg md:text-2xl font-display text-[#3b4a38] mb-2 leading-[1.8]">
+          {SHLOKAS[0].text}<br/>{SHLOKAS[0].line2}
+        </h3>
+        <p className="text-[10px] md:text-xs tracking-[0.2em] uppercase text-[#7e966c] mb-6">{SHLOKAS[0].attr}</p>
+        <p className="text-[#556353] font-body text-sm md:text-base max-w-[40ch] leading-relaxed italic border-t border-black/10 pt-4 px-4">
+          "Ayurveda is that which deals with good, bad, happy and unhappy life, its promoters and non-promoters, measure and nature."
+        </p>
+      </div>
+    );
+  }
+
+  if (type === 'inside-backcover') {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-8 md:p-12 text-center" style={paperTexture}>
+        <div className="w-32 h-32 md:w-48 md:h-48 relative mb-8 mix-blend-multiply opacity-90 select-none pointer-events-none">
+          <Image src="/rishi.png" alt="Ayurvedic Rishi" fill className="object-contain" priority />
+        </div>
+        <h3 className="text-lg md:text-2xl font-display text-[#3b4a38] mb-2 leading-[1.8]">
+          {SHLOKAS[1].text}<br/>{SHLOKAS[1].line2}
+        </h3>
+        <p className="text-[10px] md:text-xs tracking-[0.2em] uppercase text-[#7e966c] mb-6">{SHLOKAS[1].attr}</p>
+        <p className="text-[#556353] font-body text-sm md:text-base max-w-[44ch] leading-relaxed italic border-t border-black/10 pt-4 px-4">
+          "One whose doshas are balanced, whose appetite is good, whose tissues are functioning normally, whose wastes are eliminated properly, and whose self, mind, and senses remain full of bliss is called a healthy person."
+        </p>
+      </div>
+    );
+  }
+
+  // default: step page
+  const step = data;
+  return (
+    <div className={`p-8 md:p-16 h-full flex flex-col relative w-full ${isLeft ? 'items-end text-right' : 'items-start text-left'}`} style={paperTexture}>
+      <div
+        className="text-[140px] md:text-[220px] font-display font-bold leading-none opacity-5 pointer-events-none absolute select-none"
+        style={{ color: step.accentColor, top: '4rem', [isLeft ? 'left' : 'right']: '3rem' }}
+      >
+        0{step.id}
+      </div>
+      <div className="relative z-10 w-full pt-16 md:pt-32 px-4 md:px-12">
+        <h4 className="text-[0.65rem] md:text-xs tracking-[0.2em] font-semibold uppercase mb-4 md:mb-6 drop-shadow-sm" style={{ color: step.accentColor }}>
+          Step 0{step.id} · {step.subtitle}
+        </h4>
+        <h3 className="text-4xl md:text-6xl font-display text-[#243126] mb-6 md:mb-10 font-medium tracking-tight">
+          {step.title}
+        </h3>
+        <p className="text-[#3b4a38] font-body text-base md:text-xl leading-[1.8] max-w-[38ch] break-words">
+          {step.desc}
+        </p>
+      </div>
+      <div className="mt-auto w-24 md:w-40 h-1" style={{ background: `${step.accentColor}50` }} />
+    </div>
+  );
+}
