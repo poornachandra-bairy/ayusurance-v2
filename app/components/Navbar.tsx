@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { NAV_LINKS, NAV_CTA_LABEL, SITE_NAME } from '../constants';
 
 const Navbar = () => {
@@ -14,7 +15,13 @@ const Navbar = () => {
           href='/'
           className='font-display font-semibold text-xl md:text-2xl text-forest-deep tracking-tight no-underline select-none z-10'
         >
-          {SITE_NAME}
+          <div className='flex items-center gap-1'>
+            <Image src={'/logo.png'} alt={SITE_NAME} width={32} height={32} />
+            <div className='flex items-center -mt-[4px]'>
+              <span className='text-gold-deep'>ayu</span>
+              <span>surance</span>
+            </div>
+          </div>
         </Link>
 
         <div className='flex align-center gap-8'>

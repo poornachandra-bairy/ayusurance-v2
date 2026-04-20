@@ -43,7 +43,11 @@ const AboutContainer = () => {
         },
       });
       tl.to(overlayRef.current, { opacity: 0.7, ease: 'none' }, 0);
-      tl.to('.about-header-content', { scale: 0.7, opacity: 0, y: -30, ease: 'power2.inOut' }, 0);
+      tl.to(
+        '.about-header-content',
+        { scale: 0.7, opacity: 0, y: -30, ease: 'power2.inOut' },
+        0,
+      );
       tl.to(letterRef.current, { scale: 1.25, ease: 'power2.inOut' }, 0);
     });
 
@@ -57,7 +61,11 @@ const AboutContainer = () => {
         },
       });
       tl.to(overlayRef.current, { opacity: 0.6, ease: 'none' }, 0);
-      tl.to('.about-header-content', { scale: 0.8, opacity: 0, y: -20, ease: 'linear' }, 0);
+      tl.to(
+        '.about-header-content',
+        { scale: 0.8, opacity: 0, y: -20, ease: 'linear' },
+        0,
+      );
       tl.to(letterRef.current, { scale: 1.05, ease: 'power2.inOut' }, 0);
     });
 
@@ -142,32 +150,46 @@ const AboutContainer = () => {
         }
       `}</style>
 
-      <main ref={containerRef} className="min-h-screen overflow-x-hidden relative">
+      <main
+        ref={containerRef}
+        className='min-h-screen overflow-x-hidden relative'
+      >
         <div
           ref={overlayRef}
-          className="fixed inset-0 pointer-events-none"
+          className='fixed inset-0 pointer-events-none'
           style={{ background: '#0a0d0a', opacity: 0, zIndex: 0 }}
         />
 
-        <svg className="absolute" style={{ width: 0, height: 0 }}>
+        <svg className='absolute' style={{ width: 0, height: 0 }}>
           <filter id='seal-distort'>
-            <feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='5' seed='5' />
+            <feTurbulence
+              type='fractalNoise'
+              baseFrequency='0.05'
+              numOctaves='5'
+              seed='5'
+            />
             <feDisplacementMap in='SourceGraphic' scale='15' />
           </filter>
         </svg>
 
-        <div ref={viewportRef} className="w-full flex flex-col items-center relative z-10">
-          <div className="max-w-[1100px] mx-auto px-6 py-24 md:py-36 relative z-10">
+        <div
+          ref={viewportRef}
+          className='w-full flex flex-col items-center relative z-10'
+        >
+          <div className='max-w-[1100px] mx-auto px-6 py-24 md:py-36 relative z-10'>
             <div
-              className="about-header-content text-center mb-32"
+              className='about-header-content text-center mb-32'
               style={{ transformOrigin: 'center bottom' }}
             >
-              <h2 className="text-[0.8rem] tracking-[0.6em] uppercase text-[#4A635A] mb-8 font-bold font-sans">
+              <h2 className='text-[0.8rem] tracking-[0.6em] uppercase text-[#4A635A] mb-8 font-bold font-sans'>
                 {ABOUT_EYEBROW}
               </h2>
               <h1
                 className={`${cormorant.className} uppercase text-[#4d4232] font-bold leading-[0.8] mb-6`}
-                style={{ fontSize: 'clamp(3.5rem, 12vw, 9rem)', letterSpacing: '-0.04em' }}
+                style={{
+                  fontSize: 'clamp(3.5rem, 12vw, 9rem)',
+                  letterSpacing: '-0.04em',
+                }}
               >
                 {ABOUT_HEADLINE}
               </h1>
@@ -178,35 +200,54 @@ const AboutContainer = () => {
               </p>
             </div>
 
-            <div ref={letterRef} className="w-full relative z-10" style={{ transformOrigin: 'center top' }}>
-              <div className="letter-paper">
-                <div className="wax-seal wax-seal-bg" title="Ayusurance Guarantee" />
+            <div
+              ref={letterRef}
+              className='w-full relative z-10'
+              style={{ transformOrigin: 'center top' }}
+            >
+              <div className='letter-paper'>
+                <div
+                  className='wax-seal wax-seal-bg'
+                  title='Ayusurance Guarantee'
+                />
 
-                <div className="relative z-10">
-                  <div className="letter-header">{ABOUT_LETTER_HEADER}</div>
+                <div className='relative z-10 pl-[36px]'>
+                  <div className='letter-header'>{ABOUT_LETTER_HEADER}</div>
 
                   <div
-                    className="text-[#2a2216] leading-relaxed font-medium"
-                    style={{ fontFamily: 'Caveat, cursive', fontSize: 'clamp(20px, 2.4vw, 26px)' }}
+                    className='text-[#2a2216] leading-relaxed font-medium'
+                    style={{
+                      fontFamily: 'Caveat, cursive',
+                      fontSize: 'clamp(20px, 2.4vw, 26px)',
+                    }}
                   >
-                    <p className="mb-8 font-semibold text-[#3d3224]" style={{ fontSize: '1.4rem' }}>
+                    <p
+                      className='mb-8 font-semibold text-[#3d3224]'
+                      style={{ fontSize: '1.4rem' }}
+                    >
                       {ABOUT_SALUTATION}
                     </p>
                     {ABOUT_PARAGRAPHS.map((para, i) => (
-                      <p key={i} className="mb-6">{para}</p>
+                      <p key={i} className='mb-6'>
+                        {para}
+                      </p>
                     ))}
-                    <p className="mb-6">{ABOUT_SIGN_OFF}</p>
+                    <p className='mb-6'>{ABOUT_SIGN_OFF}</p>
                   </div>
 
-                  <div className="mt-12">
+                  <div className='mt-12 '>
                     <p
-                      className="text-[#2a2216] font-medium"
-                      style={{ fontFamily: 'Caveat, cursive', fontSize: 'clamp(24px, 2.8vw, 30px)', lineHeight: 1.2 }}
+                      className='text-[#2a2216] font-medium'
+                      style={{
+                        fontFamily: 'Caveat, cursive',
+                        fontSize: 'clamp(24px, 2.8vw, 30px)',
+                        lineHeight: 1.2,
+                      }}
                     >
                       {ABOUT_FOUNDERS}
                     </p>
-                    <div className="w-[180px] h-[1.5px] bg-[rgba(61,50,36,0.2)] my-2.5" />
-                    <p className="text-[11px] text-[#7a6a4a] uppercase tracking-[0.2em] font-semibold font-sans">
+                    <div className='w-[180px] h-[1.5px] bg-[rgba(61,50,36,0.2)] my-2.5' />
+                    <p className='text-[11px] text-[#7a6a4a] uppercase tracking-[0.2em] font-semibold font-sans'>
                       {ABOUT_FOUNDERS_ROLE}
                     </p>
                   </div>
@@ -216,7 +257,7 @@ const AboutContainer = () => {
           </div>
         </div>
 
-        <div className="h-[35vh]" />
+        <div className='h-[35vh]' />
       </main>
     </>
   );
