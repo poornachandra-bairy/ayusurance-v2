@@ -12,10 +12,8 @@ interface Props {
 const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: Props) => (
   <div className="w-full md:basis-1/2 shrink-0 grow-0 h-auto md:h-full flex items-center justify-center md:justify-end md:pr-12 relative mt-8 md:mt-0">
 
-    {/* opacity-0 initially — entrance animation fades this in */}
     <div ref={rishiRef} className="opacity-0 relative flex items-center justify-center">
 
-      {/* rishiImgRef: scales + fades via rAF during scroll. */}
       <div ref={rishiImgRef} className="origin-center will-change-[transform,opacity] relative">
         <Image
           src="/rishi.png"
@@ -28,7 +26,6 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
         />
       </div>
 
-      {/* Dosha icons — position unchanged from original (top-[45%] of rishiRef) */}
       <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
         {DOSHAS.map((d, i) => (
           <div
@@ -51,7 +48,6 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
         ))}
       </div>
 
-      {/* Bhuta elements — orbit driven by rAF */}
       {BHUTAS.map((b, i) => (
         <div
           key={b.id}
@@ -73,7 +69,7 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
         </div>
       ))}
 
-      {/* Element cards — fly in / out driven by rAF */}
+      
       {BHUTAS.map((b, i) => {
         const card   = CARD_CONTENT[i];
         const accent = CARD_ACCENTS[b.id];
@@ -81,9 +77,8 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
           <div
             key={`card-${b.id}`}
             ref={el => { cardRefs.current[i] = el; }}
-            className="absolute top-[52%] left-1/2 w-[280px] h-[185px] rounded-[18px] opacity-0 flex flex-col gap-1.5 select-none overflow-hidden will-change-[transform,opacity]"
+            className={`absolute top-[52%] left-1/2 w-[280px] h-[185px] rounded-[18px] opacity-0 flex flex-col gap-1.5 select-none overflow-hidden will-change-[transform,opacity] ${CARD_COLORS[b.id]}`}
             style={{
-              background: CARD_COLORS[b.id],
               boxShadow:  '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.10)',
               padding:    '16px 18px',
             }}
@@ -92,8 +87,8 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
               {card.title}
             </h3>
             <div
-              className="h-px shrink-0"
-              style={{ background: `linear-gradient(90deg, ${accent}80, transparent)` }}
+              className="h-px shrink-0 card-line"
+              style={{ color: accent }}
             />
             <p className="m-0 text-[13.5px] text-white/90 leading-[1.65] tracking-[0.008em] line-clamp-3">
               {card.desc}

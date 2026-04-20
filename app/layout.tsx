@@ -1,8 +1,14 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Courier_Prime, Manrope, Eczar } from 'next/font/google';
+import {
+  Cormorant_Garamond,
+  Courier_Prime,
+  Manrope,
+  Eczar,
+} from 'next/font/google';
 import './globals.css';
 import SmoothScroll from './components/SmoothScroll';
 import GlobalAtmosphere from './components/GlobalAtmosphere';
+import Navbar from './components/Navbar';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -23,7 +29,6 @@ const courierPrime = Courier_Prime({
   variable: '--font-courier',
 });
 
-// Eczar — Roman serif co-designed with Devanagari strokes, ideal for Sanskrit-feel English headings
 const eczar = Eczar({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
@@ -39,12 +44,13 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
   <html
     lang='en'
-  className={`${cormorant.variable} ${manrope.variable} ${courierPrime.variable} ${eczar.variable} antialiased font-body`}
+    className={`${cormorant.variable} ${manrope.variable} ${courierPrime.variable} ${eczar.variable} antialiased font-body`}
     suppressHydrationWarning
   >
     <body className='min-h-full flex flex-col' suppressHydrationWarning>
       <GlobalAtmosphere />
       <SmoothScroll />
+      <Navbar />
       {children}
     </body>
   </html>

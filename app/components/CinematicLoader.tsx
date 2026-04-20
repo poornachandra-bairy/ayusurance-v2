@@ -3,11 +3,11 @@
 import { useEffect, useRef } from 'react';
 import { LOADER_BRAND_AYU, LOADER_BRAND_SUFFIX } from '../constants';
 
-// ── Grid geometry ────────────────────────────────────────────────────────────
-const BOX_SIZE = 56;   // px
-const GAP      = 12;   // px
-const GRID_W   = BOX_SIZE * 2 + GAP;  // 124px
-const GRID_H   = BOX_SIZE * 2 + GAP;  // 124px
+
+const BOX_SIZE = 56;   
+const GAP      = 12;   
+const GRID_W   = BOX_SIZE * 2 + GAP;  
+const GRID_H   = BOX_SIZE * 2 + GAP;  
 
 const SLOTS = [
   { dx: -(BOX_SIZE / 2 + GAP / 2), dy: -(BOX_SIZE / 2 + GAP / 2) },
@@ -16,16 +16,16 @@ const SLOTS = [
   { dx:  (BOX_SIZE / 2 + GAP / 2), dy:  (BOX_SIZE / 2 + GAP / 2) },
 ] as const;
 
-const DELAYS   = [0, 130, 260, 390];   // ms stagger per box
-const DROP_H   = 320;                   // px to fall
-const FALL_MS  = 520;                   // fall duration
-const DECAY    = 0.42;                  // bounce amplitude decay
-const BOUNCE   = 190;                   // bounce half-period ms
+const DELAYS   = [0, 130, 260, 390];   
+const DROP_H   = 320;                   
+const FALL_MS  = 520;                   
+const DECAY    = 0.42;                  
+const BOUNCE   = 190;                   
 
 const easeIn  = (t: number) => t * t * t;
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 interface Props { onComplete: () => void; }
 
@@ -47,7 +47,7 @@ const CinematicLoader = ({ onComplete }: Props) => {
     const completeAt = exitStart + 900;
 
     const tick = (now: number) => {
-      // ── Boxes ──────────────────────────────────────────────────────────────
+      
       SLOTS.forEach((slot, i) => {
         const el      = boxRefs.current[i];
         if (!el) return;
@@ -59,7 +59,7 @@ const CinematicLoader = ({ onComplete }: Props) => {
           return;
         }
 
-        // Fall
+        
         if (elapsed < FALL_MS) {
           const y = -DROP_H + DROP_H * easeIn(elapsed / FALL_MS);
           el.style.opacity   = '1';
@@ -68,7 +68,7 @@ const CinematicLoader = ({ onComplete }: Props) => {
           return;
         }
 
-        // Bounce
+        
         const after  = elapsed - FALL_MS;
         let remain   = after;
         let amp      = DROP_H * 0.32;
@@ -96,7 +96,7 @@ const CinematicLoader = ({ onComplete }: Props) => {
         el.style.transform = `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy + bounceY}px)) scaleX(${sx.toFixed(4)}) scaleY(${sy.toFixed(4)})`;
       });
 
-      // ── Logo fade-in ────────────────────────────────────────────────────
+      
       if (logoRef.current) {
         const le = now - logoStart;
         if (le < 0) {
@@ -109,7 +109,7 @@ const CinematicLoader = ({ onComplete }: Props) => {
         }
       }
 
-      // ── Exit fade ────────────────────────────────────────────────────────
+      
       if (wrapRef.current) {
         const xe = now - exitStart;
         if (xe >= 0) {
@@ -128,12 +128,9 @@ const CinematicLoader = ({ onComplete }: Props) => {
   return (
     <div
       ref={wrapRef}
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
-      style={{
-        background: 'linear-gradient(160deg, #fdf8ee 0%, #f3e6c0 25%, #e4f0d8 55%, #cce8df 80%, #b8dfd6 100%)',
-      }}
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center loader-bg"
     >
-      {/* 2×2 grid */}
+      
       <div
         className="relative flex-shrink-0"
         style={{ width: GRID_W, height: GRID_H }}
@@ -155,7 +152,7 @@ const CinematicLoader = ({ onComplete }: Props) => {
         ))}
       </div>
 
-      {/* Logotype — "ayu" under grid, "surance" extends right */}
+      
       <div
         ref={logoRef}
         className="flex items-baseline mt-4 will-change-transform"

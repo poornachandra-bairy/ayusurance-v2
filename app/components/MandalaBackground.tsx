@@ -73,7 +73,7 @@ const MandalaBackground = () => {
         >
           <div className="w-full h-full" style={{ animation: m.float }}>
             <div className="w-full h-full" style={{ animation: m.spinAnim }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              
               <img
                 src={m.src}
                 alt=""
