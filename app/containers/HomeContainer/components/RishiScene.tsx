@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { DOSHAS, BHUTAS, CARD_COLORS, CARD_ACCENTS, CARD_CONTENT } from '../../lib/tokens';
+import { DOSHAS, BHUTAS, CARD_COLORS, CARD_ACCENTS, CARD_CONTENT } from '../../../lib/tokens';
 
 interface Props {
   rishiRef:    React.RefObject<HTMLDivElement | null>;

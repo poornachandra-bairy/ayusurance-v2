@@ -1,0 +1,15 @@
+export const CONTACT_HEADLINE = 'GET IN TOUCH';
+export const CONTACT_SUBHEADLINE = "We're here to guide you on your wellness journey.";
+export const CONTACT_COMPANY = 'Sadaika Healthcare OPC Pvt Ltd';
+export const CONTACT_ESTB = 'Estb. 2015';
+export const CONTACT_ADDRESS_LABEL = 'Clinical HQ';
+export const CONTACT_ADDRESS_LINE1 = 'Shri Manyu, Gundibail,';
+export const CONTACT_ADDRESS_LINE2 = 'Manipal Road, Udupi,';
+export const CONTACT_ADDRESS_LINE3 = 'Karnataka, 576102';
+export const CONTACT_PHONE_LABEL = 'Direct Line';
+export const CONTACT_PHONE = '+91 9845702082';
+export const CONTACT_PHONE_HREF = 'tel:+919845702082';
+export const CONTACT_HOVER_TEXT = 'Speak With Us';
+export const CONTACT_MAP_TITLE = 'The Location';
+export const CONTACT_MAP_SRC =
+  'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3881.821216040295!2d74.7682112!3d13.3613904!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbcbca58fbc6247%3A0x23f0062dd0000000!2sSadaika%20Healthcare%20OPC%20Pvt%20Ltd!5e0!3m2!1sen!2sin!4v1776512436763!5m2!1sen!2sin';

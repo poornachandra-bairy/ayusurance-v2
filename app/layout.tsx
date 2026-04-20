@@ -1,10 +1,5 @@
 import type { Metadata } from 'next';
-import {
-  Cormorant_Garamond,
-  Courier_Prime,
-  Manrope,
-  Eczar,
-} from 'next/font/google';
+import { Cormorant_Garamond, Courier_Prime, Manrope } from 'next/font/google';
 import './globals.css';
 import SmoothScroll from './components/SmoothScroll';
 import GlobalAtmosphere from './components/GlobalAtmosphere';
@@ -29,12 +24,6 @@ const courierPrime = Courier_Prime({
   variable: '--font-courier',
 });
 
-const eczar = Eczar({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-sanskrit',
-  display: 'swap',
-});
 export const metadata: Metadata = {
   title: 'Ayusurance — Ancient Wisdom Modern Assurance',
   description:
@@ -44,7 +33,7 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
   <html
     lang='en'
-    className={`${cormorant.variable} ${manrope.variable} ${courierPrime.variable} ${eczar.variable} antialiased font-body`}
+    className={`${cormorant.variable} ${manrope.variable} ${courierPrime.variable}  antialiased font-body`}
     suppressHydrationWarning
   >
     <body className='min-h-full flex flex-col' suppressHydrationWarning>

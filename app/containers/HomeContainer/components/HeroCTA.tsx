@@ -2,7 +2,7 @@ import {
   HOME_FINAL_HEADING,
   HOME_FINAL_BODY,
   HOME_FINAL_CTA,
-} from '../../constants';
+} from '../../../constants';
 
 interface Props {
   divRef: React.RefObject<HTMLDivElement | null>;

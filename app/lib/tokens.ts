@@ -3,7 +3,6 @@ export const CARD_RADIUS = 268;
 
 export const TEXT_ENTER = 0.0;
 export const RISHI_ENTER = 0.35;
-export const DOSHA_ENTRANCE = [1.0, 1.5, 2.0] as const;
 export const ENTRANCE_DONE = 2.8;
 
 export const BHUTAS = [

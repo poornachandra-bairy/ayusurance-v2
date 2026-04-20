@@ -1,4 +1,4 @@
-import { ShlokaData } from '../../constants';
+import { ShlokaData } from '../../../constants';
 
 interface Props {
   shloka: ShlokaData;

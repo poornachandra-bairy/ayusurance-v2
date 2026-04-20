@@ -69,9 +69,3 @@ export const SHLOKAS: ShlokaData[] = [
   },
 ];
 
-export const SHLOKA_1_TEXT = SHLOKAS[0].text;
-export const SHLOKA_1_LINE2 = SHLOKAS[0].line2;
-export const SHLOKA_1_ATTR = SHLOKAS[0].attr;
-export const SHLOKA_2_TEXT = SHLOKAS[1].text;
-export const SHLOKA_2_LINE2 = SHLOKAS[1].line2;
-export const SHLOKA_2_ATTR = SHLOKAS[1].attr;

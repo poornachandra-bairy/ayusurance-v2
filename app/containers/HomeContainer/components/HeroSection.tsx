@@ -3,8 +3,8 @@ import HeroText from './HeroText';
 import RishiScene from './RishiScene';
 import PalmLeafCard from './PalmLeafCard';
 import HeroCTA from './HeroCTA';
-import { SHLOKAS } from '../../constants';
-import type { HeroRefs } from '../../hooks/useHeroAnimation';
+import { SHLOKAS } from '../../../constants';
+import type { HeroRefs } from '../../../hooks/useHeroAnimation';
 
 type Props = HeroRefs;
 

@@ -4,7 +4,7 @@ import {
   FOOTER_CREDIT_TEXT,
   FOOTER_CREDIT_LINK,
   FOOTER_CREDIT_HREF,
-} from '../constants';
+} from '../../../constants';
 
 const HomeFooter = () => (
   <footer className="py-[60px] px-5 text-center bg-[#d4c9a8] text-text-700 font-sans text-[13px] flex flex-col gap-3 relative z-10">

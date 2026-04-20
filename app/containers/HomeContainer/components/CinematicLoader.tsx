@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { LOADER_BRAND_AYU, LOADER_BRAND_SUFFIX } from '../constants';
+import { LOADER_BRAND_AYU, LOADER_BRAND_SUFFIX } from '../../../constants';
 
 
 const BOX_SIZE = 56;   

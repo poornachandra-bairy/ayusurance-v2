@@ -4,7 +4,7 @@ import {
   HOME_HERO_BODY,
   HOME_HERO_CTA_PRIMARY,
   HOME_HERO_CTA_SECONDARY,
-} from '../../constants';
+} from '../../../constants';
 
 interface Props {
   textRef: React.RefObject<HTMLDivElement | null>;
