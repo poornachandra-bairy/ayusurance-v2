@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, RefObject } from 'react';
 import { useIntersection } from 'react-use';
 
 interface Text3DFlipProps {
@@ -22,7 +22,7 @@ export default function Text3DFlip({
   ...props
 }: Text3DFlipProps) {
   const containerRef = useRef<HTMLSpanElement>(null);
-  const intersection = useIntersection(containerRef, {
+  const intersection = useIntersection(containerRef as RefObject<HTMLElement>, {
     root: null,
     rootMargin: '0px',
     threshold: 0.2,
