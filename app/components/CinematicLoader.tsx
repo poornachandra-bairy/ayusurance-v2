@@ -1,123 +1,87 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { LOADER_BRAND_AYU, LOADER_BRAND_SUFFIX } from '../constants';
-
-// ── Grid geometry ────────────────────────────────────────────────────────────
-const BOX_SIZE = 56;   // px
-const GAP      = 12;   // px
-const GRID_W   = BOX_SIZE * 2 + GAP;  // 124px
-const GRID_H   = BOX_SIZE * 2 + GAP;  // 124px
-
-const SLOTS = [
-  { dx: -(BOX_SIZE / 2 + GAP / 2), dy: -(BOX_SIZE / 2 + GAP / 2) },
-  { dx:  (BOX_SIZE / 2 + GAP / 2), dy: -(BOX_SIZE / 2 + GAP / 2) },
-  { dx: -(BOX_SIZE / 2 + GAP / 2), dy:  (BOX_SIZE / 2 + GAP / 2) },
-  { dx:  (BOX_SIZE / 2 + GAP / 2), dy:  (BOX_SIZE / 2 + GAP / 2) },
-] as const;
-
-const DELAYS   = [0, 130, 260, 390];   // ms stagger per box
-const DROP_H   = 320;                   // px to fall
-const FALL_MS  = 520;                   // fall duration
-const DECAY    = 0.42;                  // bounce amplitude decay
-const BOUNCE   = 190;                   // bounce half-period ms
-
-const easeIn  = (t: number) => t * t * t;
-const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface Props { onComplete: () => void; }
 
 const CinematicLoader = ({ onComplete }: Props) => {
-  const boxRefs = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
-  const logoRef = useRef<HTMLDivElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
+  const wrapRef    = useRef<HTMLDivElement>(null);
+  const logoRef    = useRef<HTMLImageElement>(null);
+
+  const arcRef     = useRef<SVGCircleElement>(null);
+  const barRef     = useRef<HTMLDivElement>(null);
+  const barFillRef = useRef<HTMLDivElement>(null);
+  const tagRef     = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let raf = 0;
     const t0 = performance.now();
 
-    const fallStart = DELAYS.map(d => t0 + d);
-    const landTime  = DELAYS.map(d => t0 + d + FALL_MS);
-    const maxLand   = Math.max(...landTime);
+    // Arc circumference: r=148 → C = 2π×148 ≈ 929.9
+    const CIRCUMFERENCE = 2 * Math.PI * 148;
 
-    const logoStart  = maxLand + 280;
-    const exitStart  = logoStart + 1900;
-    const completeAt = exitStart + 900;
+    const LOGO_START  = 200;
+    const LOGO_DUR    = 1800;   // very slow, cinematic reveal
+    const ARC_START   = 100;
+    const ARC_DUR     = 2000;   // arc draws itself around the logo
+    const GLOW_START  = 600;
+    const GLOW_DUR    = 1400;
+    const BAR_START   = 400;
+    const BAR_DUR     = 1800;
+    const TAG_START   = 1200;
+    const TAG_DUR     = 600;
+    const EXIT_START  = 3200;
+    const EXIT_DUR    = 600;
+    const DONE_AT     = EXIT_START + EXIT_DUR + 60;
+
+    const easeOut3  = (t: number) => 1 - Math.pow(1 - t, 3);
+    const easeOut5  = (t: number) => 1 - Math.pow(1 - t, 5);
+    const easeInOut = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
     const tick = (now: number) => {
-      // ── Boxes ──────────────────────────────────────────────────────────────
-      SLOTS.forEach((slot, i) => {
-        const el      = boxRefs.current[i];
-        if (!el) return;
-        const elapsed = now - fallStart[i];
+      const el = now - t0;
 
-        if (elapsed < 0) {
-          el.style.opacity   = '0';
-          el.style.transform = `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy - DROP_H}px))`;
-          return;
-        }
-
-        // Fall
-        if (elapsed < FALL_MS) {
-          const y = -DROP_H + DROP_H * easeIn(elapsed / FALL_MS);
-          el.style.opacity   = '1';
-          el.style.boxShadow = 'none';
-          el.style.transform = `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy + y}px))`;
-          return;
-        }
-
-        // Bounce
-        const after  = elapsed - FALL_MS;
-        let remain   = after;
-        let amp      = DROP_H * 0.32;
-        let bounceY  = 0;
-        let sx = 1, sy = 1;
-        const period = BOUNCE * 2;
-
-        while (remain >= 0 && amp > 1.5) {
-          if (remain < period) {
-            bounceY = -amp * Math.sin((remain / period) * Math.PI);
-            const g = 1 - Math.abs(bounceY) / amp;
-            sx = 1 + g * 0.20;
-            sy = 1 - g * 0.18;
-            break;
-          }
-          remain -= period;
-          amp    *= DECAY;
-        }
-
-        const glow = Math.max(0, 1 - after / 700);
-        el.style.opacity   = '1';
-        el.style.boxShadow = glow > 0.02
-          ? `0 0 ${14 * glow}px ${5 * glow}px rgba(200,130,26,${0.5 * glow})`
-          : 'none';
-        el.style.transform = `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy + bounceY}px)) scaleX(${sx.toFixed(4)}) scaleY(${sy.toFixed(4)})`;
-      });
-
-      // ── Logo fade-in ────────────────────────────────────────────────────
+      // ── Logo: ultra-slow fade + scale from slightly small ──
       if (logoRef.current) {
-        const le = now - logoStart;
-        if (le < 0) {
-          logoRef.current.style.opacity   = '0';
-          logoRef.current.style.transform = 'translateY(14px)';
-        } else {
-          const e = easeOut(Math.min(1, le / 650));
-          logoRef.current.style.opacity   = String(e);
-          logoRef.current.style.transform = `translateY(${(1 - e) * 14}px)`;
-        }
+        const p = Math.min(1, Math.max(0, (el - LOGO_START) / LOGO_DUR));
+        const e = easeOut5(p);
+        logoRef.current.style.opacity   = String(e);
+        logoRef.current.style.transform = `scale(${0.82 + 0.18 * e})`;
       }
 
-      // ── Exit fade ────────────────────────────────────────────────────────
-      if (wrapRef.current) {
-        const xe = now - exitStart;
-        if (xe >= 0) {
-          wrapRef.current.style.opacity = String(1 - easeOut(Math.min(1, xe / 900)));
-        }
+      // ── SVG arc: draws itself clockwise from top ──
+      if (arcRef.current) {
+        const p = Math.min(1, Math.max(0, (el - ARC_START) / ARC_DUR));
+        const e = easeInOut(p);
+        const drawn = e * CIRCUMFERENCE;
+        arcRef.current.style.strokeDashoffset = String(CIRCUMFERENCE - drawn);
+        // fade in arc as it starts drawing
+        arcRef.current.style.opacity = String(Math.min(1, p * 6));
       }
 
-      if (now >= completeAt) { onComplete(); return; }
+
+      // ── Progress bar ──
+      if (barRef.current && barFillRef.current) {
+        const pb = Math.min(1, Math.max(0, (el - BAR_START) / BAR_DUR));
+        barRef.current.style.opacity   = String(Math.min(1, (el - BAR_START) / 300));
+        barFillRef.current.style.width = `${easeOut3(pb) * 100}%`;
+      }
+
+      // ── Tagline ──
+      if (tagRef.current) {
+        const pt = Math.min(1, Math.max(0, (el - TAG_START) / TAG_DUR));
+        const et = easeOut3(pt);
+        tagRef.current.style.opacity   = String(et);
+        tagRef.current.style.transform = `translateY(${(1 - et) * 10}px)`;
+      }
+
+      // ── Exit ──
+      if (wrapRef.current && el >= EXIT_START) {
+        const xe = el - EXIT_START;
+        wrapRef.current.style.opacity = String(1 - easeOut3(Math.min(1, xe / EXIT_DUR)));
+      }
+
+      if (el >= DONE_AT) { onComplete(); return; }
       raf = requestAnimationFrame(tick);
     };
 
@@ -125,47 +89,106 @@ const CinematicLoader = ({ onComplete }: Props) => {
     return () => cancelAnimationFrame(raf);
   }, [onComplete]);
 
+  const SIZE = 320;
+  const R    = 148;
+  const CX   = SIZE / 2;
+  const CIRC = 2 * Math.PI * R;
+
   return (
     <div
       ref={wrapRef}
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
-      style={{
-        background: 'linear-gradient(160deg, #fdf8ee 0%, #f3e6c0 25%, #e4f0d8 55%, #cce8df 80%, #b8dfd6 100%)',
-      }}
+      style={{ background: '#111A12' }}
     >
-      {/* 2×2 grid */}
-      <div
-        className="relative flex-shrink-0"
-        style={{ width: GRID_W, height: GRID_H }}
-      >
-        {SLOTS.map((slot, i) => (
-          <div
-            key={i}
-            ref={el => { boxRefs.current[i] = el; }}
-            className="absolute top-1/2 left-1/2 rounded-[3px] will-change-transform"
-            style={{
-              width:           BOX_SIZE,
-              height:          BOX_SIZE,
-              border:          '2.5px solid #c8821a',
-              opacity:         0,
-              transformOrigin: 'bottom center',
-              transform:       `translate(calc(-50% + ${slot.dx}px), calc(-50% + ${slot.dy - DROP_H}px))`,
-            }}
+      {/* ── Logo cluster ── */}
+      <div style={{ position: 'relative', width: SIZE, height: SIZE }}>
+
+
+
+        {/* SVG arc that draws itself clockwise */}
+        <svg
+          width={SIZE}
+          height={SIZE}
+          style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}
+        >
+          {/* Static faint track */}
+          <circle
+            cx={CX} cy={CX} r={R}
+            fill="none"
+            stroke="rgba(201,168,108,0.08)"
+            strokeWidth={1}
           />
-        ))}
+          {/* Animated drawing arc */}
+          <circle
+            ref={arcRef}
+            cx={CX} cy={CX} r={R}
+            fill="none"
+            stroke="rgba(201,168,108,0.7)"
+            strokeWidth={1.5}
+            strokeDasharray={CIRC}
+            strokeDashoffset={CIRC}
+            strokeLinecap="round"
+            style={{ opacity: 0, willChange: 'stroke-dashoffset, opacity' }}
+          />
+        </svg>
+
+        {/* Logo — original, untouched */}
+        <img
+          ref={logoRef}
+          src="/aysurance_logo.png"
+          alt="Ayusurance"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            margin: 'auto',
+            width: 320,
+            height: 320,
+            objectFit: 'contain',
+            opacity: 0,
+            transform: 'scale(0.82)',
+            willChange: 'transform, opacity',
+          }}
+        />
       </div>
 
-      {/* Logotype — "ayu" under grid, "surance" extends right */}
+      {/* ── Progress bar ── */}
       <div
-        ref={logoRef}
-        className="flex items-baseline mt-4 will-change-transform"
-        style={{ opacity: 0 }}
+        ref={barRef}
+        style={{
+          width: 200, height: 1,
+          background: 'rgba(201,168,108,0.12)',
+          marginTop: 48, opacity: 0,
+          borderRadius: 1, overflow: 'hidden',
+        }}
       >
-        <span className="font-display font-semibold leading-none whitespace-nowrap text-[4rem] tracking-[0.12em] text-[#c8821a]">
-          {LOADER_BRAND_AYU}
-        </span>
-        <span className="font-display font-semibold leading-none whitespace-nowrap text-[4rem] tracking-[0.06em] text-text-700">
-          {LOADER_BRAND_SUFFIX}
+        <div
+          ref={barFillRef}
+          style={{
+            height: '100%', width: '0%',
+            background: 'linear-gradient(90deg, transparent, #C9A86C, #E8D5A3)',
+            willChange: 'width', borderRadius: 1,
+          }}
+        />
+      </div>
+
+      {/* ── Tagline ── */}
+      <div
+        ref={tagRef}
+        style={{
+          opacity: 0, transform: 'translateY(10px)',
+          marginTop: 20, willChange: 'transform, opacity',
+          textAlign: 'center',
+        }}
+      >
+        <span style={{
+          fontFamily: 'var(--font-sans, DM Sans, sans-serif)',
+          fontSize: '0.6rem',
+          letterSpacing: '0.5em',
+          textTransform: 'uppercase',
+          color: 'rgba(245,240,232,0.40)',
+          fontWeight: 500,
+        }}>
+          Ancient Wisdom · Modern Care
         </span>
       </div>
     </div>

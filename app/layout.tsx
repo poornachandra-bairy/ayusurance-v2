@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Courier_Prime, Manrope, Eczar } from 'next/font/google';
+import { Cormorant_Garamond, DM_Sans, Caveat } from 'next/font/google';
 import './globals.css';
 import SmoothScroll from './components/SmoothScroll';
-import GlobalAtmosphere from './components/GlobalAtmosphere';
+import BotanicalBackground from './components/BotanicalBackground';
+import { LoaderProvider } from './providers/LoaderProvider';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -11,25 +12,20 @@ const cormorant = Cormorant_Garamond({
   display: 'swap',
 });
 
-const manrope = Manrope({
+const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
   variable: '--font-body',
   display: 'swap',
 });
-const courierPrime = Courier_Prime({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-courier',
-});
 
-// Eczar — Roman serif co-designed with Devanagari strokes, ideal for Sanskrit-feel English headings
-const eczar = Eczar({
+const caveat = Caveat({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-sanskrit',
+  variable: '--font-handwritten',
   display: 'swap',
 });
+
 export const metadata: Metadata = {
   title: 'Ayusurance — Ancient Wisdom Modern Assurance',
   description:
@@ -39,13 +35,15 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => (
   <html
     lang='en'
-  className={`${cormorant.variable} ${manrope.variable} ${courierPrime.variable} ${eczar.variable} antialiased font-body`}
+    className={`${cormorant.variable} ${dmSans.variable} ${caveat.variable} antialiased font-body`}
     suppressHydrationWarning
   >
     <body className='min-h-full flex flex-col' suppressHydrationWarning>
-      <GlobalAtmosphere />
-      <SmoothScroll />
-      {children}
+      <LoaderProvider>
+        <BotanicalBackground />
+        <SmoothScroll />
+        {children}
+      </LoaderProvider>
     </body>
   </html>
 );

@@ -1,76 +1,277 @@
 @import 'tailwindcss';
 
-/* ─── Design tokens (Tailwind v4 @theme) ───────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   NATURE CARD DESIGN — matching the reference image exactly
+   Hero: Teal-green #3A8060 + Terracotta #8B5030 diagonal
+   Cards section: Sage embossed texture #5A7055
+   Cards: Dark forest green #2D5038 / Earthy brown #7A4028
+   Button: Warm cream-beige #D4A878
+───────────────────────────────────────────────────────────────────────────── */
 @theme {
-  /* Palette */
-  --color-ivory:        #f8f4ea;
-  --color-champagne:    #f1e6c8;
-  --color-sandal:       #e6d7b1;
-  --color-gold-soft:    #c9a45a;
-  --color-gold-deep:    #a8843e;
-  --color-sage-light:   #d8e2cf;
-  --color-sage:         #a9bc97;
-  --color-herb:         #7e966c;
-  --color-olive:        #5f7750;
-  --color-forest:       #3f5a3e;
-  --color-forest-deep:  #2b4230;
-  --color-amber-logo:   #c8821a;
+  --color-hero-green:  #3A8060;
+  --color-hero-brown:  #8B5030;
+  --color-card-sage:   #5A8055;
+  --color-card-dark:   #2D5038;
+  --color-card-brown:  #7A4028;
+  --color-text-light:  #F5F0E8;
+  --color-text-muted:  rgba(245, 240, 232, 0.75);
+  --color-btn:         #D4A878;
 
-  --color-text-900: #243126;
-  --color-text-700: #3b4a38;
-  --color-text-500: #556353;
-  --color-text-400: #6e7a6c;
-  --color-text-300: #889184;
+  --font-sans:        var(--font-body),        'DM Sans', Arial, sans-serif;
+  --font-serif:       var(--font-heading),     'Cormorant Garamond', Georgia, serif;
+  --font-display:     var(--font-heading),     'Cormorant Garamond', Georgia, serif;
+  --font-handwritten: var(--font-handwritten), 'Caveat', cursive;
 
-  /* Typography */
-  --font-sans:    var(--font-body),    Arial, Helvetica, sans-serif;
-  --font-mono:    var(--font-courier), 'Courier Prime', Courier, monospace;
-  --font-serif:   var(--font-heading), 'Cormorant Garamond', Georgia, serif;
-  --font-display: var(--font-heading), 'Cormorant Garamond', Georgia, serif;
-  --font-sanskrit: var(--font-sanskrit), 'Cormorant Garamond', Georgia, serif;
+  --color-bg-ayurveda: #4A7055;
+  --color-navbar-bg:   rgba(42, 100, 72, 0.90);
 }
 
-/* ─── Keyframes (cannot be expressed as Tailwind classes) ──────────────────── */
+/* ─── Keyframes ──────────────────────────────────────────────────────────────── */
 @keyframes mandalaSpinCW  { to { transform: rotate(360deg);  } }
 @keyframes mandalaSpinCCW { to { transform: rotate(-360deg); } }
-
 @keyframes mandalaFloat {
-  0%, 100% { margin-top: 0px;   margin-left: 0px;   }
-  25%      { margin-top: -22px; margin-left: 12px;  }
-  50%      { margin-top: -8px;  margin-left: -18px; }
-  75%      { margin-top: 16px;  margin-left: 8px;   }
+  0%, 100% { transform: translate(0, 0);       }
+  33%      { transform: translate(8px, -14px);  }
+  66%      { transform: translate(-10px,-4px);  }
 }
-
-@keyframes bgBreath {
-  0%, 100% { opacity: 1;   }
-  50%      { opacity: 0.9; }
-}
-
 @keyframes bounceUp {
-  0%, 100% { transform: translateY(0);   }
+  0%, 100% { transform: translateY(0);    }
   50%      { transform: translateY(-8px); }
 }
-
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50%       { transform: translateY(7px); opacity: 1; }
+}
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0);    }
 }
-
-/* ─── Base reset ────────────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
-
-html {
-  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+@keyframes leafSway {
+  0%, 100% { transform: rotate(-3deg) translateY(0px);    }
+  50%      { transform: rotate(3deg)  translateY(-10px);  }
+}
+@keyframes leafDrift {
+  0%, 100% { transform: translateX(0) rotate(-2deg);  }
+  50%      { transform: translateX(8px) rotate(2deg); }
+}
+@keyframes leafFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg);   }
+  50%      { transform: translateY(-14px) rotate(2deg);}
+}
+@keyframes dia-reveal-shine {
+  0% { background-position: 0% center; }
+  100% { background-position: -200% center; }
+}
+@keyframes shimmer-spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-100% - var(--gap, 1.5rem))); }
+}
+.animate-marquee {
+  animation: marquee var(--duration, 40s) linear infinite;
 }
 
+/* ─── Card shadows — soft depth on textured bg ─────────────────────────────── */
+:root {
+  --shadow-card:
+    0 8px 24px rgba(30, 55, 35, 0.35),
+    0 2px 8px rgba(30, 55, 35, 0.20);
+
+  --shadow-card-hover:
+    0 14px 36px rgba(30, 55, 35, 0.45),
+    0 4px 12px rgba(30, 55, 35, 0.25);
+
+  --shadow-card-sm:
+    0 4px 16px rgba(30, 55, 35, 0.30),
+    0 1px 6px rgba(30, 55, 35, 0.18);
+
+  /* Keep neu variables so existing code doesn't break */
+  --neu-raised:    var(--shadow-card);
+  --neu-raised-sm: var(--shadow-card-sm);
+  --neu-raised-lg: var(--shadow-card-hover);
+  --neu-inset:     inset 0 2px 8px rgba(30, 55, 35, 0.35);
+  --neu-inset-sm:  inset 0 1px 5px rgba(30, 55, 35, 0.28);
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-family: var(--font-body), 'DM Sans', Arial, sans-serif; }
+
 body {
-  color: #3b4a38;
-  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  color: #1C271E;
+  background: #F9F7F1;
+  font-family: var(--font-body), 'DM Sans', Arial, sans-serif;
   margin: 0;
   padding: 0;
 }
 
+/* ─── Components ──────────────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Primary button — warm cream/peach like reference */
+  .btn-ayurveda {
+    @apply inline-flex items-center justify-center px-7 py-3
+           rounded-full text-sm font-semibold
+           transition-all duration-200 text-center select-none cursor-pointer;
+    background: #D4A878;
+    color: #2D3820;
+    box-shadow: 0 4px 14px rgba(30, 55, 35, 0.30);
+    letter-spacing: 0.02em;
+
+    &:hover {
+      background: #E0B888;
+      box-shadow: 0 6px 20px rgba(30, 55, 35, 0.38);
+      transform: translateY(-1px);
+    }
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(30, 55, 35, 0.28);
+    }
+  }
+
+  /* Dark forest green card — primary card style */
+  .card-ayurveda {
+    @apply rounded-[18px] transition-all duration-300;
+    background: #2D5038;
+    box-shadow: var(--shadow-card);
+    color: #F5F0E8;
+    padding: 2rem 2.5rem;
+
+    @media (min-width: 768px) { padding: 3rem; }
+    &:hover { box-shadow: var(--shadow-card-hover); }
+  }
+
+  /* Earthy brown card variant */
+  .card-earth {
+    @apply rounded-[18px] transition-all duration-300;
+    background: #7A4028;
+    box-shadow: var(--shadow-card);
+    color: #F5F0E8;
+    padding: 2rem 2.5rem;
+
+    @media (min-width: 768px) { padding: 3rem; }
+    &:hover { box-shadow: var(--shadow-card-hover); }
+  }
+
+  /* Sage green card variant */
+  .card-sage {
+    @apply rounded-[18px] transition-all duration-300;
+    background: #5A8055;
+    box-shadow: var(--shadow-card);
+    color: #F5F0E8;
+    padding: 2rem 2.5rem;
+
+    @media (min-width: 768px) { padding: 3rem; }
+    &:hover { box-shadow: var(--shadow-card-hover); }
+  }
+
+  /* Generic panel */
+  .neu-panel {
+    background: #2D5038;
+    box-shadow: var(--shadow-card);
+    border-radius: 18px;
+  }
+
+  .neu-inset {
+    background: rgba(30, 55, 35, 0.20);
+    box-shadow: var(--neu-inset);
+    border-radius: 14px;
+  }
+
+  /* ─── MORINGA MATTE 3D CLASSES (EXTRUDED ISOMETRIC UI) ─── */
+  .moringa-noise {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.18;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+  }
+
+  .matte-bg-cream {
+    background-color: #EBDDC8; /* Sand/Cream Texture Base */
+  }
+
+  .matte-3d-green {
+    background-color: #284A34; /* Moringa Dark Green */
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 
+      inset 3px 3px 6px rgba(255, 255, 255, 0.15), 
+      inset -3px -3px 6px rgba(0, 0, 0, 0.3),      
+      0px 8px 0px #14251a,                        
+      6px 16px 22px rgba(0, 0, 0, 0.5);            
+    color: #EBDDC8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .matte-3d-green:hover {
+    transform: translateY(-6px);
+    box-shadow: 
+      inset 3px 3px 6px rgba(255, 255, 255, 0.15),
+      inset -3px -3px 6px rgba(0, 0, 0, 0.3),
+      0px 14px 0px #14251a, 
+      10px 24px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .matte-3d-brown {
+    background-color: #7A4028; /* Match Offerings Brown */
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 
+      inset 3px 3px 6px rgba(255, 255, 255, 0.15),
+      inset -3px -3px 6px rgba(0, 0, 0, 0.3),
+      0px 8px 0px #3d2014,
+      6px 16px 22px rgba(0, 0, 0, 0.5);
+    color: #EBDDC8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .matte-3d-brown:hover {
+    transform: translateY(-6px);
+    box-shadow: 
+      inset 3px 3px 6px rgba(255, 255, 255, 0.15),
+      inset -3px -3px 6px rgba(0, 0, 0, 0.3),
+      0px 14px 0px #3d2014, 
+      10px 24px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .matte-btn {
+    background-color: #284A34; /* Base Green */
+    border-radius: 9999px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 
+      inset 2px 2px 4px rgba(255, 255, 255, 0.15),
+      inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+      0px 4px 0px #14251a,
+      3px 8px 12px rgba(0, 0, 0, 0.3);
+    color: #EBDDC8;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .matte-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+      inset 2px 2px 4px rgba(255, 255, 255, 0.15),
+      inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+      0px 7px 0px #14251a,
+      5px 12px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Text Colors */
+  .matte-text-green { color: #284A34; }
+  .matte-text-brown { color: #7A4028; }
+  .matte-text-cream { color: #EBDDC8; }
+
+
+}
+
 ::selection {
-  background: rgba(201,164,90,0.28);
-  color: #243126;
+  background: rgba(212, 168, 120, 0.30);
+  color: #F5F0E8;
 }

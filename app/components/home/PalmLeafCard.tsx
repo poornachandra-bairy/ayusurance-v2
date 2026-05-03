@@ -107,10 +107,9 @@ const PalmLeafCard = ({ shloka, side, divRef }: Props) => {
 
         {/* ── Shloka text — inscribed appearance (dark brown on earthy tan) ── */}
         <p
-          className="relative m-0 text-center leading-[2.3] tracking-[0.04em]"
+          className="relative m-0 text-center leading-[2.3] tracking-[0.04em] font-serif"
           style={{
             fontSize:   'clamp(0.90rem, 1.6vw, 1.15rem)',
-            fontFamily: "'Noto Serif Devanagari', serif",
             color:      '#332508',
             textShadow: '0 1px 0 rgba(220,210,160,0.40)',
           }}

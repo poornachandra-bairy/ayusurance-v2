@@ -20,11 +20,11 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
         <Image
           src="/rishi.png"
           alt="Rishi"
-          width={630}
-          height={810}
+          width={780}
+          height={1000}
           priority
           className="object-contain select-none w-auto block"
-          style={{ maxHeight: '60vh' }}
+          style={{ maxHeight: '80vh' }}
         />
       </div>
 
@@ -35,6 +35,7 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
             key={d.id}
             ref={el => { doshaRefs.current[i] = el; }}
             className="opacity-0 flex flex-col items-center gap-1"
+            style={{ transform: d.id === 'kapha' || d.id === 'pitta' ? 'translateY(4px)' : 'none' }}
           >
             <Image
               src={d.src}
@@ -83,19 +84,19 @@ const RishiScene = ({ rishiRef, rishiImgRef, doshaRefs, bhutaRefs, cardRefs }: P
             ref={el => { cardRefs.current[i] = el; }}
             className="absolute top-[52%] left-1/2 w-[280px] h-[185px] rounded-[18px] opacity-0 flex flex-col gap-1.5 select-none overflow-hidden will-change-[transform,opacity]"
             style={{
-              background: CARD_COLORS[b.id],
-              boxShadow:  '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.10)',
-              padding:    '16px 18px',
+              background: i % 2 === 0 ? '#2D5038' : '#7A4028',
+              boxShadow: '-8px -8px 18px #6A9870, 8px 8px 18px #1E3828',
+              padding: '16px 18px',
             }}
           >
-            <h3 className="m-0 text-[17px] font-display font-semibold text-white leading-[1.25] tracking-[0.04em]">
+            <h3 className="m-0 text-[17px] font-display font-semibold text-[#F0EAE0] leading-[1.25] tracking-[0.04em]">
               {card.title}
             </h3>
             <div
               className="h-px shrink-0"
               style={{ background: `linear-gradient(90deg, ${accent}80, transparent)` }}
             />
-            <p className="m-0 text-[13.5px] text-white/90 leading-[1.65] tracking-[0.008em] line-clamp-3">
+            <p className="m-0 text-[13.5px] leading-[1.65] tracking-[0.008em] line-clamp-3" style={{ color: 'rgba(240,234,224,0.78)' }}>
               {card.desc}
             </p>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { clamp, phase, ease, lerp } from '../lib/utils';
 import {
   ORBIT_RADIUS,
@@ -70,40 +71,38 @@ export function useHeroAnimation(loaderDone: boolean): HeroRefs {
     if (textRef.current) textRef.current.style.transform = 'translateY(24px)';
     doshaRefs.current.forEach(el => setOpacity(el, '0'));
 
+
+    // ── Unified GSAP Entrance ──
+    const entranceTl = gsap.timeline({
+      onComplete: () => { entranceDone = true; }
+    });
+
+    if (loaderDone) {
+      entranceTl.fromTo(textRef.current, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: TEXT_ENTER }
+      );
+      
+      entranceTl.fromTo(rishiRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 1, ease: 'power3.out', delay: RISHI_ENTER - TEXT_ENTER },
+        "<"
+      );
+      
+      entranceTl.fromTo(doshaRefs.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 1, ease: 'power3.out', delay: RISHI_ENTER - TEXT_ENTER },
+        "<"
+      );
+    }
+
     const animate = () => {
-      const elapsed = (performance.now() - mountTimeRef.current) / 1000;
       const scrollY = window.scrollY;
 
-      // ── Entrance phase ────────────────────────────────────────────────────
-      if (!entranceDone && elapsed < ENTRANCE_DONE && scrollY < 20) {
-        if (textRef.current) {
-          const t = ease(clamp((elapsed - TEXT_ENTER) / 0.65, 0, 1));
-          textRef.current.style.opacity   = String(t);
-          textRef.current.style.transform = `translateY(${lerp(24, 0, t)}px)`;
-        }
-        if (rishiRef.current) {
-          const t = ease(clamp((elapsed - RISHI_ENTER) / 0.75, 0, 1));
-          rishiRef.current.style.opacity = String(t);
-        }
-        // Doshas appear with rishi — no stagger
-        doshaRefs.current.forEach(el => {
-          if (!el) return;
-          el.style.opacity = rishiRef.current?.style.opacity ?? '0';
-        });
-        bhutaRefs.current.forEach(el => { if (el) el.style.opacity = '0'; });
-
+      // Skip the old manual entrance phase
+      if (!entranceDone) {
         rafId = requestAnimationFrame(animate);
         return;
-      }
-
-      // Snap to final entrance state
-      if (!entranceDone) {
-        entranceDone = true;
-        setOpacity(textRef.current,  '1');
-        setOpacity(rishiRef.current, '1');
-        if (textRef.current) textRef.current.style.transform = '';
-        doshaRefs.current.forEach(el => setOpacity(el, '1'));
-        lastY = -1;
       }
 
       setOpacity(rishiRef.current, '1');
@@ -125,8 +124,8 @@ export function useHeroAnimation(loaderDone: boolean): HeroRefs {
       }
 
       // Rishi center offset (computed lazily)
-      if (p > 0.52 && centerOffsetRef.current === null && rishiRef.current) {
-        const r = rishiRef.current.getBoundingClientRect();
+      if (p > 0.52 && centerOffsetRef.current === null && rishiImgRef.current) {
+        const r = rishiImgRef.current.getBoundingClientRect();
         centerOffsetRef.current = window.innerWidth / 2 - (r.left + r.width / 2);
       }
       if (rishiRef.current) {

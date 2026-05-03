@@ -11,3 +11,7 @@ export const lerp = (a: number, b: number, t: number): number =>
   a + (b - a) * t;
 
 export const easeIO = ease;
+
+export function cn(...classes: (string | undefined | null | false)[]) {
+  return classes.filter(Boolean).join(" ");
+}

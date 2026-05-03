@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 
 const SmoothScroll = () => {
+  const pathname = usePathname();
+  const [lenisInstance, setLenisInstance] = useState<Lenis | null>(null);
+
   useEffect(() => {
     const lenis = new Lenis({
       // Higher duration = slower, more cinematic scroll
@@ -17,6 +21,8 @@ const SmoothScroll = () => {
       // Smooth on all axis
       smoothWheel: true,
     });
+
+    setLenisInstance(lenis);
 
     let rafId: number;
 
@@ -32,6 +38,13 @@ const SmoothScroll = () => {
       cancelAnimationFrame(rafId);
     };
   }, []);
+
+  // Reset scroll on navigation
+  useEffect(() => {
+    if (lenisInstance) {
+      lenisInstance.scrollTo(0, { immediate: true });
+    }
+  }, [pathname, lenisInstance]);
 
   return null;
 };
