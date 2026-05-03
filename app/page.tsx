@@ -187,17 +187,26 @@ export default function Home() {
                 <div className="w-16 h-px bg-[#A38F72]/50" />
               </FadeIn>
 
-              <div className="lg:w-2/3 flex flex-col">
+              <div className="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {OFFERINGS.map((item, i) => (
                   <FadeIn key={i} delay={i * 100}>
-                    <div className="group flex flex-col md:flex-row md:items-center gap-6 border-b border-[#2C3A32]/10 py-10 cursor-pointer transition-all hover:pl-6 hover:border-[#A38F72]">
-                      <span className="text-2xl font-serif italic text-[#A38F72]/50 group-hover:text-[#A38F72] transition-colors md:w-16">0{i + 1}</span>
-                      <div className="flex-1">
-                        <h3 className="text-3xl font-serif mb-3 text-[#2C3A32] group-hover:text-[#A38F72] transition-colors">{item.t}</h3>
-                        <p className="text-lg text-[#5A665D] font-light leading-relaxed max-w-xl">{item.d}</p>
+                    <div className="group relative flex flex-col justify-between h-full bg-[#FAF8F5] border border-[#2C3A32]/10 p-8 rounded-2xl cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(44,58,50,0.08)] overflow-hidden">
+                      {/* Decorative corner accent */}
+                      <div className="absolute top-0 right-0 w-16 h-16 bg-[#284A34]/5 rounded-bl-3xl transition-transform duration-500 group-hover:scale-150 group-hover:bg-[#C9A86C]/10" />
+                      
+                      <div className="relative z-10 mb-12">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#284A34]/5 text-[#A38F72] font-serif italic text-xl mb-6 transition-colors duration-500 group-hover:bg-[#284A34] group-hover:text-white">
+                          0{i + 1}
+                        </span>
+                        <h3 className="text-2xl font-serif mb-4 text-[#2C3A32] transition-colors">{item.t}</h3>
+                        <p className="text-base text-[#5A665D] font-light leading-relaxed">{item.d}</p>
                       </div>
-                      <div className="hidden md:flex items-center justify-center w-12 h-12 rounded-full border border-[#2C3A32]/10 group-hover:border-[#A38F72] group-hover:bg-[#A38F72] group-hover:text-white transition-all transform -translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+
+                      <div className="relative z-10 flex items-center justify-between mt-auto pt-6 border-t border-[#2C3A32]/5">
+                        <span className="text-xs font-semibold tracking-widest uppercase text-[#A38F72] group-hover:text-[#2C3A32] transition-colors">Explore</span>
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full border border-[#2C3A32]/10 group-hover:border-[#C9A86C] group-hover:bg-[#C9A86C] group-hover:text-white transition-all transform group-hover:translate-x-1">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                        </div>
                       </div>
                     </div>
                   </FadeIn>

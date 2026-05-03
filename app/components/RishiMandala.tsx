@@ -47,7 +47,7 @@ const RishiMandala = () => {
           transform: `scale(${isScrolled ? 1 : 0.8})`,
         }}
       >
-        <Image src="/mandala-3.png" alt="Outer Mandala" fill className="object-contain" unoptimized />
+        <Image src="/mandala-3.png" alt="Outer Mandala" fill className="object-contain" unoptimized loading="eager" priority />
       </div>
 
       {/* ── Inner Mandala Ring (CW) ── */}
