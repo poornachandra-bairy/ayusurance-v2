@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, RefObject } from 'react';
 import { useIntersection } from 'react-use';
 
 export function TextAnimate({ 
@@ -15,7 +15,7 @@ export function TextAnimate({
   once?: boolean;
 }) {
   const containerRef = useRef<HTMLSpanElement>(null);
-  const intersection = useIntersection(containerRef, {
+  const intersection = useIntersection(containerRef as RefObject<HTMLElement>, {
     root: null,
     rootMargin: '0px',
     threshold: 0.2, // Trigger when 20% visible
