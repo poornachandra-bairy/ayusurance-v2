@@ -41,7 +41,7 @@ export default function AboutPage() {
         {/* ── HERO ── */}
         <section className="about-hero">
           <div className="about-hero-img-wrap">
-            <img src="/about_hero.jpg" alt="Ayurvedic herbs and spices — Sadaika Healthcare" className="about-hero-img" />
+            <img src="/about_hero-mortar-pestle.png" alt="Ayurvedic mortar and pestle — Sadaika Healthcare" className="about-hero-img" />
             <div className="about-hero-overlay" />
           </div>
 
