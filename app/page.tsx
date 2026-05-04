@@ -79,19 +79,19 @@ export default function Home() {
           <section className="sticky top-0 w-full h-screen overflow-hidden">
           {/* Background image with moderate dark overlay */}
           <div className="absolute inset-0">
-            <img src="/home_hero-bg.png" alt="Ayurvedic sanctuary" className="w-full h-full object-cover animate-slow-zoom" />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(10,20,12,0.40) 0%, rgba(10,20,12,0.25) 50%, rgba(10,20,12,0.50) 100%)' }} />
+            <img src="/about_hero.jpg" alt="Ayurvedic sanctuary" className="w-full h-full object-cover animate-slow-zoom" />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, rgba(25,15,10,0.85) 0%, rgba(20,10,5,0.7) 50%, rgba(10,20,12,0.9) 100%)' }} />
           </div>
 
           {/* Smooth left-to-right dark gradient for text readability */}
-          <div className="absolute inset-y-0 left-0 w-full md:w-[70%] bg-gradient-to-r from-[#0A140C]/70 via-[#0A140C]/20 to-transparent z-[4] pointer-events-none" />
+          <div className="absolute inset-y-0 left-0 w-full md:w-[70%] bg-gradient-to-r from-[#0A140C]/90 via-[#0A140C]/40 to-transparent z-[4] pointer-events-none" />
 
           {/* Elegant Geometric Rings Animation */}
-          <div className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[40%] w-[800px] h-[800px] md:w-[1200px] md:h-[1200px] z-[5] pointer-events-none flex items-center justify-center opacity-50">
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 -translate-x-[40%] w-[800px] h-[800px] md:w-[1200px] md:h-[1200px] z-[6] pointer-events-none flex items-center justify-center opacity-70">
             {/* Outer dashed gold ring */}
-            <div className="absolute inset-0 rounded-full border-[1px] border-[#C9A86C]/40 border-dashed animate-[spin_120s_linear_infinite]" />
+            <div className="absolute inset-0 rounded-full border-[1.5px] border-[#C9A86C]/60 border-dashed animate-[spin_120s_linear_infinite]" />
             {/* Inner solid green ring */}
-            <div className="absolute inset-[4%] rounded-full border-[1px] border-[#284A34]/50 animate-[spin_90s_linear_infinite_reverse]" />
+            <div className="absolute inset-[4%] rounded-full border-[1.5px] border-[#C9A86C]/30 animate-[spin_90s_linear_infinite_reverse]" />
             {/* Third delicate ring */}
             <div className="absolute inset-[8%] rounded-full border-[1px] border-[#C9A86C]/20 animate-[spin_60s_linear_infinite]" />
           </div>

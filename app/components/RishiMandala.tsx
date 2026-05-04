@@ -120,7 +120,7 @@ const RishiMandala = () => {
                   unoptimized
                 />
 
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-48 p-3 bg-[#0A140C]/90 border border-[#C9A86C]/30 backdrop-blur-md rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 w-48 p-3 bg-[#0A140C]/90 border border-[#C9A86C]/30 backdrop-blur-md rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   <h4 className="text-[#C9A86C] font-display italic text-base mb-1">{dosha.name}</h4>
                   <p className="text-white/70 text-xs font-light leading-relaxed">{dosha.desc}</p>
                 </div>
